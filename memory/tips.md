@@ -24,7 +24,7 @@
 ### Titanic (Kaggle) ✅ TESTED
 - **Size**: 891 passengers (59KB)
 - **Quality Issues**: Missing Age (19%), duplicates (10%)
-- **HeptaAI Results**: 
+- **DataVint Results**: 
   - Detected 10.1% duplicates
   - AUC improved 0.842 → 0.845 (+0.4%)
   - Precision improved +2.8%

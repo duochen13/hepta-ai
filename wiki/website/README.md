@@ -86,12 +86,12 @@ vercel --prod
 ```
 
 #### Option 3: GitHub Pages (Recommended)
-1. Go to https://github.com/duochen13/hepta-ai/settings/pages
+1. Go to https://github.com/duochen13/datavint/settings/pages
 2. Under "Source" → Select "Deploy from a branch"
 3. Under "Branch" → Select "main"
 4. Under "Folder" → Select "/docs"
 5. Click "Save"
-6. Your site will be live at `https://duochen13.github.io/hepta-ai/`
+6. Your site will be live at `https://duochen13.github.io/datavint/`
 
 #### Option 4: AWS S3 + CloudFront
 ```bash

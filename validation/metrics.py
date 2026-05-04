@@ -128,7 +128,7 @@ def compute_metrics(
     if "rmse" in metric_names:
         metrics["rmse"] = np.sqrt(mean_squared_error(y_true, y_pred_proba))
 
-    # Normalized Entropy (HeptaAI's focus metric)
+    # Normalized Entropy (DataVint's focus metric)
     if "ne" in metric_names:
         metrics["ne"] = compute_normalized_entropy(y_true, y_pred_proba)
 

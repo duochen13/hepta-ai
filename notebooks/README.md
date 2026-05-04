@@ -46,7 +46,7 @@ jupyter notebook notebooks/data_profiling_demo.ipynb
 pip install jupyter
 
 # Install DataVint (from project root)
-cd /path/to/heptaAI
+cd /path/to/datavint
 pip install -e .
 ```
 
@@ -108,30 +108,30 @@ jupyter notebook
 ### 1. **First-Time Dataset Exploration**
 ```python
 # What is this dataset?
-hepta.profile_dataset("mystery_data.csv")
+dv.profile_dataset("mystery_data.csv")
 # → See shape, types, missing values, balance
 ```
 
 ### 2. **Pre-Training Sanity Check**
 ```python
 # Is my data ready for training?
-hepta.compare_datasets("train.csv", "test.csv", label_col="target")
+dv.compare_datasets("train.csv", "test.csv", label_col="target")
 # → Catch distribution shifts before wasting GPU time
 ```
 
 ### 3. **Daily Pipeline Monitoring**
 ```python
 # Did today's data refresh succeed?
-hepta.compare_datasets(f"{yesterday}/data.csv", f"{today}/data.csv")
+dv.compare_datasets(f"{yesterday}/data.csv", f"{today}/data.csv")
 # → Detect pipeline bugs immediately
 ```
 
 ### 4. **Debugging Model Performance**
 ```python
 # Model performance degraded - is it the data?
-hepta.profile_dataset("recent_data.csv")
-stats = hepta.generate_statistics("recent_data.csv")
-issues = hepta.detect_issues(stats)
+dv.profile_dataset("recent_data.csv")
+stats = dv.generate_statistics("recent_data.csv")
+issues = dv.detect_issues(stats)
 # → Find quality issues that might explain the degradation
 ```
 
@@ -189,7 +189,7 @@ Label (label):
 
 ```bash
 # From project root
-cd /path/to/heptaAI
+cd /path/to/datavint
 jupyter notebook
 ```
 
@@ -209,7 +209,7 @@ python playground/download_movielens.py
 
 Or use your own dataset:
 ```python
-hepta.profile_dataset("path/to/your/data.csv", label_col="your_label")
+dv.profile_dataset("path/to/your/data.csv", label_col="your_label")
 ```
 
 ### Kernel crashes on large datasets
@@ -218,10 +218,10 @@ hepta.profile_dataset("path/to/your/data.csv", label_col="your_label")
 
 ```python
 # Fast (< 1 sec)
-hepta.profile_dataset("large_data.csv")
+dv.profile_dataset("large_data.csv")
 
 # Slower (might crash on very large data)
-# stats = hepta.generate_statistics("large_data.csv")
+# stats = dv.generate_statistics("large_data.csv")
 ```
 
 ## 📚 Additional Resources

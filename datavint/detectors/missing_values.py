@@ -25,7 +25,7 @@ class MissingValuesDetector(BaseDetector):
     - MEDIUM: >20% null rate (default threshold)
 
     Example:
-        >>> from heptaai.statistics import generate_statistics
+        >>> from datavint.statistics import generate_statistics
         >>> import pandas as pd
         >>> df = pd.DataFrame({
         ...     "user_age": [25, None, None, None, None],  # 80% null

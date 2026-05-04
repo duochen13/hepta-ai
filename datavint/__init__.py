@@ -1,5 +1,5 @@
 """
-HeptaAI: Data Quality Detection for ML
+DataVint: Data Quality Detection for ML
 
 A lightweight SDK for detecting data quality issues in ML datasets.
 

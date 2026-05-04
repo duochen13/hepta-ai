@@ -24,7 +24,7 @@ Measure DataVint's impact on model performance by comparing metrics before and a
 
 ```python
 import pandas as pd
-import datavint as hepta
+import datavint as dv
 from validation import fix_dataset, train_and_evaluate
 from validation.metrics import compare_metrics
 
@@ -41,8 +41,8 @@ metrics_before = train_and_evaluate(
 )
 
 # 3. DataVint detection
-stats = hepta.generate_statistics(train_raw, label_col=label)
-issues = hepta.detect_issues(stats)
+stats = dv.generate_statistics(train_raw, label_col=label)
+issues = dv.detect_issues(stats)
 
 # 4. Apply fixes
 train_clean, fix_report = fix_dataset(train_raw, issues, label_col=label)

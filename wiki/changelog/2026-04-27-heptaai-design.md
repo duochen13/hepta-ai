@@ -139,25 +139,25 @@ This is a **data flight simulator** — the MLE explores their hypotheses before
 raw data
    │
    ▼
-① hepta.generate_statistics()   — per-feature stats + label entropy per segment
+① dv.generate_statistics()   — per-feature stats + label entropy per segment
    │
    ▼
-② hepta.visualize_statistics()  — TFDV-style display + issue badges
+② dv.visualize_statistics()  — TFDV-style display + issue badges
    │
    ▼
-③ hepta.detect_issues()         — universal detectors + domain rules
+③ dv.detect_issues()         — universal detectors + domain rules
    │                               outputs: Issues (type, signal, direction, confidence)
    ▼
-④ hepta.display_issues()        — [Apply] [Skip] [Adjust] per issue (human in loop)
+④ dv.display_issues()        — [Apply] [Skip] [Adjust] per issue (human in loop)
    │
    ▼
-⑤ hepta.generate_manifest()     — outputs manifest.json (weights + filter mask)
+⑤ dv.generate_manifest()     — outputs manifest.json (weights + filter mask)
    │
    ▼
 manifest.apply() → train model → eval NE/AUC
    │
    ▼
-⑥ hepta.record_feedback()       — improves base policy + domain-adaptive layer
+⑥ dv.record_feedback()       — improves base policy + domain-adaptive layer
 ```
 
 TFDV stops at step ②. DataVint goes to step ⑥.
@@ -295,7 +295,7 @@ class DefaultPolicy:
 
 Users can override thresholds:
 ```python
-manifest = hepta.generate_manifest(
+manifest = dv.generate_manifest(
     train_stats,
     issues,
     policy_overrides={
@@ -510,20 +510,20 @@ This exceeds typical "simple library" scope but is manageable for an MVP with st
 
 | TFDV step | DataVint equivalent | What's new |
 |---|---|---|
-| `generate_statistics_from_csv()` | `hepta.generate_statistics()` | adds label entropy per segment |
-| `visualize_statistics()` | `hepta.visualize_statistics()` | adds issue badges, no CDN/Jupyter required |
-| `validate_statistics()` → anomalies | `hepta.detect_issues()` → Issues | adds directional ML impact + confidence |
-| `display_anomalies()` | `hepta.display_issues()` | shows NE/AUC direction, not just flag |
-| — no equivalent — | `hepta.generate_manifest()` | prescribes fixes, human approves each |
+| `generate_statistics_from_csv()` | `dv.generate_statistics()` | adds label entropy per segment |
+| `visualize_statistics()` | `dv.visualize_statistics()` | adds issue badges, no CDN/Jupyter required |
+| `validate_statistics()` → anomalies | `dv.detect_issues()` → Issues | adds directional ML impact + confidence |
+| `display_anomalies()` | `dv.display_issues()` | shows NE/AUC direction, not just flag |
+| — no equivalent — | `dv.generate_manifest()` | prescribes fixes, human approves each |
 | — no equivalent — | `manifest.apply()` | applies approved weights + filter mask |
-| — no equivalent — | `hepta.simulate()` | what-if without retraining |
-| — no equivalent — | `hepta.record_feedback()` | closes the loop |
+| — no equivalent — | `dv.simulate()` | what-if without retraining |
+| — no equivalent — | `dv.record_feedback()` | closes the loop |
 
 **API style:** module-level functions (like TFDV), not a class instance. Data objects (`Statistics`, `Issues`, `Manifest`) are explicit and inspectable at every step.
 
 ```python
 pip install datavint
-import datavint as hepta
+import datavint as dv
 from pathlib import Path
 from typing import Optional, List, Union
 import pandas as pd
@@ -532,31 +532,31 @@ import pandas as pd
 # Per-feature: count, missing%, mean, p50, p99, median, distribution
 # + label entropy per feature segment (TFDV does not compute this)
 # Returns: DatasetStatistics (Python dataclass, not proto)
-train_stats: hepta.DatasetStatistics = hepta.generate_statistics(
+train_stats: dv.DatasetStatistics = dv.generate_statistics(
     "train.csv",
     label_col="click"
 )
-eval_stats: hepta.DatasetStatistics = hepta.generate_statistics(
+eval_stats: dv.DatasetStatistics = dv.generate_statistics(
     "eval.csv",
     label_col="click"
 )
 
 # ── Step 2: Visualize ────────────────────────────────────────────────────
 # Single dataset — per-feature stats + issue badges
-hepta.visualize_statistics(train_stats)
+dv.visualize_statistics(train_stats)
 
 # Side-by-side comparison — mirrors tfdv.visualize_statistics(lhs=, rhs=)
-hepta.visualize_statistics(lhs=train_stats, rhs=eval_stats,
+dv.visualize_statistics(lhs=train_stats, rhs=eval_stats,
                            lhs_name="TRAIN", rhs_name="EVAL")
 
 # ── Step 3: Detect issues ────────────────────────────────────────────────
 # Universal issues detected automatically.
 # Pass serving_statistics to trigger skew detection (mirrors TFDV's pattern).
-issues = hepta.detect_issues(
+issues = dv.detect_issues(
     statistics=train_stats,
     serving_statistics=eval_stats,  # optional — enables train/eval skew checks
 )
-hepta.display_issues(issues)
+dv.display_issues(issues)
 # ┌────────────────────────────────────────────────────────────────────────┐
 # │ Issue              Feature        Signal          Direction  Confidence│
 # ├────────────────────────────────────────────────────────────────────────┤
@@ -569,7 +569,7 @@ hepta.display_issues(issues)
 # ── Step 4: Generate manifest (no TFDV equivalent) ───────────────────────
 # Human reviews and approves each proposed fix — [Apply] [Skip] [Adjust]
 # No fix is applied without explicit approval (MVP 1).
-manifest = hepta.generate_manifest(train_stats, issues)
+manifest = dv.generate_manifest(train_stats, issues)
 manifest.summary()
 # → 3 fixes applied to 124,582 samples:
 #     class_imbalance  → upweighted 7,623 positives 14.3×        [HIGH]
@@ -597,7 +597,7 @@ df_clean = df[mask]  # Apply filter manually
 manifest.save("manifest.json")  # Export for external pipelines
 
 # ── Step 6: Feedback (optional, v1.0+) ──────────────────────────────────
-hepta.record_feedback(
+dv.record_feedback(
     manifest,
     improved=True,
     auc_delta=0.017  # Optional: helps calibrate proxy signals
@@ -608,7 +608,7 @@ hepta.record_feedback(
 
 ```python
 # Engineer knows what's wrong — skip detection, go straight to manifest
-manifest = hepta.fix("train.csv", label_col="click",
+manifest = dv.fix("train.csv", label_col="click",
                      issues=["class_imbalance", "near_duplicates"])
 manifest.save("manifest.json")
 ```
@@ -617,8 +617,8 @@ manifest.save("manifest.json")
 
 ```python
 # Cross-segment analysis — surfaces patterns invisible to per-feature stats
-issues = hepta.detect_issues(train_stats, cross_segment=True)
-hepta.display_issues(issues)
+issues = dv.detect_issues(train_stats, cross_segment=True)
+dv.display_issues(issues)
 # → "APAC segment has 4× higher label noise than NA (entropy 0.61 vs 0.15)"
 # → "Weekend data has 2× duplicate density vs weekday"
 # → "Source B has 5× more missing user_age than Source A"
@@ -628,7 +628,7 @@ hepta.display_issues(issues)
 
 ```python
 # Explore hypothetical changes using proxy signals — no retrain needed
-sim = hepta.simulate(train_stats, "remove samples where engagement_seconds < 0.5")
+sim = dv.simulate(train_stats, "remove samples where engagement_seconds < 0.5")
 sim.show()
 # → removes 18% of data (22,423 samples)
 # → label entropy:              0.41 → 0.28  (noise reduced)
@@ -636,7 +636,7 @@ sim.show()
 # → train/eval JSD (engagement): 0.31 → 0.09  (skew resolved)
 # → estimated direction: NE ↓  AUC ↑
 
-sim2 = hepta.simulate(train_stats, "use only last 90 days of data")
+sim2 = dv.simulate(train_stats, "use only last 90 days of data")
 sim2.show()
 # → retains 39% of data
 # → temporal drift score:       0.41 → 0.09
@@ -649,22 +649,22 @@ sim2.show()
 # Extend universal detection with domain knowledge TFDV cannot infer.
 # Rules plug into the same detect → propose → approve → manifest flow.
 
-@hepta.rule
+@dv.rule
 def flag_non_impression_negatives(sample):
     # In recommendation: non-impression samples are not true negatives
     if sample["label"] == 0 and sample["impression_flag"] == 0:
-        return hepta.Action.DOWNWEIGHT
+        return dv.Action.DOWNWEIGHT
     return None
 
-@hepta.rule
+@dv.rule
 def low_engagement_noise(sample):
     if sample["engagement_seconds"] < 0.5:
-        return hepta.Action.FILTER   # accidental tap, not real intent
+        return dv.Action.FILTER   # accidental tap, not real intent
     return None
 
 # Pass rules into detect_issues — they surface as Issues with same
 # directional impact display as universal detectors
-issues = hepta.detect_issues(train_stats, rules=[
+issues = dv.detect_issues(train_stats, rules=[
     flag_non_impression_negatives,
     low_engagement_noise,
 ])
@@ -675,7 +675,7 @@ issues = hepta.detect_issues(train_stats, rules=[
 ```python
 # If a trained model is available, use gradient signals for deeper detection
 # (not required — works without a model)
-issues = hepta.detect_issues(train_stats, model=my_model)
+issues = dv.detect_issues(train_stats, model=my_model)
 ```
 
 Base policy weights download on first run. Domain-adaptive layer fine-tunes locally per team. Data never leaves the customer's machine.
@@ -792,8 +792,8 @@ Each issue detector gets 3+ test cases:
 def test_detect_missing_values_high_rate():
     """Missing rate > threshold triggers issue."""
     df = pd.DataFrame({"col1": [1, 2, None, None, None]})  # 60% null
-    stats = hepta.generate_statistics(df)
-    issues = hepta.detect_issues(stats)
+    stats = dv.generate_statistics(df)
+    issues = dv.detect_issues(stats)
     assert len(issues) == 1
     assert issues[0].type == "HIGH_NULL_RATE"
     assert issues[0].severity == "high"
@@ -801,15 +801,15 @@ def test_detect_missing_values_high_rate():
 def test_detect_missing_values_acceptable_rate():
     """Missing rate < threshold is OK."""
     df = pd.DataFrame({"col1": [1, 2, None, 4, 5]})  # 20% null
-    stats = hepta.generate_statistics(df)
-    issues = hepta.detect_issues(stats)
+    stats = dv.generate_statistics(df)
+    issues = dv.detect_issues(stats)
     assert len(issues) == 0
 
 def test_missing_values_all_null():
     """100% null column is flagged."""
     df = pd.DataFrame({"col1": [None] * 100})
-    stats = hepta.generate_statistics(df)
-    issues = hepta.detect_issues(stats)
+    stats = dv.generate_statistics(df)
+    issues = dv.detect_issues(stats)
     assert any(i.type == "HIGH_NULL_RATE" for i in issues)
 ```
 
@@ -820,8 +820,8 @@ End-to-end pipeline on real datasets:
 def test_end_to_end_movielens():
     """Full pipeline on MovieLens anomalous data."""
     train = pd.read_csv("tests/fixtures/movielens_anomalous.csv")
-    stats = hepta.generate_statistics(train, label_col="label")
-    issues = hepta.detect_issues(stats)
+    stats = dv.generate_statistics(train, label_col="label")
+    issues = dv.detect_issues(stats)
 
     # Should detect known injected anomalies
     issue_types = {i.type for i in issues}
@@ -830,7 +830,7 @@ def test_end_to_end_movielens():
     assert "DUPLICATE_SAMPLES" in issue_types  # Duplicates
 
     # Manifest generation should succeed
-    manifest = hepta.generate_manifest(stats, issues)
+    manifest = dv.generate_manifest(stats, issues)
     assert manifest is not None
 
     # Apply should not crash
@@ -849,7 +849,7 @@ def bench_generate_statistics():
     # 100K rows - must complete in <5s
     df = load_criteo_sample(100_000)
     start = time.time()
-    stats = hepta.generate_statistics(df, label_col="click")
+    stats = dv.generate_statistics(df, label_col="click")
     elapsed = time.time() - start
 
     assert elapsed < 5.0
@@ -858,7 +858,7 @@ def bench_generate_statistics():
     # 1M rows - must complete in <60s
     df = load_criteo_sample(1_000_000)
     start = time.time()
-    stats = hepta.generate_statistics(df, label_col="click")
+    stats = dv.generate_statistics(df, label_col="click")
     elapsed = time.time() - start
 
     assert elapsed < 60.0
@@ -890,7 +890,7 @@ def bench_generate_statistics():
 **v0.2: Add streaming support**
 ```python
 # For large CSV files (>1GB), process in chunks
-stats = hepta.generate_statistics(
+stats = dv.generate_statistics(
     "train.csv",
     label_col="click",
     chunksize=50_000  # Process 50K rows at a time
@@ -916,26 +916,26 @@ stats = hepta.generate_statistics(
 ## The 10-Minute Demo
 
 ```python
-import datavint as hepta
+import datavint as dv
 
 # ── 1. Profile ───────────────────────────────────────────────────────────
-train_stats = hepta.generate_statistics("train.csv", label_col="click")
-eval_stats  = hepta.generate_statistics("eval.csv",  label_col="click")
-hepta.visualize_statistics(lhs=train_stats, rhs=eval_stats,
+train_stats = dv.generate_statistics("train.csv", label_col="click")
+eval_stats  = dv.generate_statistics("eval.csv",  label_col="click")
+dv.visualize_statistics(lhs=train_stats, rhs=eval_stats,
                            lhs_name="TRAIN", rhs_name="EVAL")
 
 # ── 2. Detect issues ─────────────────────────────────────────────────────
-issues = hepta.detect_issues(train_stats, serving_statistics=eval_stats)
-hepta.display_issues(issues)
+issues = dv.detect_issues(train_stats, serving_statistics=eval_stats)
+dv.display_issues(issues)
 
 # ── 3. Generate manifest (human approves) ────────────────────────────────
-manifest = hepta.generate_manifest(train_stats, issues)
+manifest = dv.generate_manifest(train_stats, issues)
 manifest.summary()
 # → 3 fixes applied, estimated direction: NE ↓  AUC ↑
 
 # ── 4. Train both models ─────────────────────────────────────────────────
 model_baseline = train(raw_data)               # NE: 0.981  AUC: 0.762
-model_hepta    = train(manifest.apply(raw_data))  # NE: 0.954  AUC: 0.779
+model_datavint    = train(manifest.apply(raw_data))  # NE: 0.954  AUC: 0.779
 
 # Same model architecture. Same training code. Only the data changed.
 ```
@@ -1253,14 +1253,14 @@ The full taxonomy specifies 20 issue types across 5 categories. This is over-eng
 **Goal:** Prove that DataVint can detect real issues and that the detection is valuable.
 
 **Ship:**
-- `hepta.generate_statistics()` - pandas-based, in-memory only
-- `hepta.detect_issues()` - **5 issue types only** (highest impact):
+- `dv.generate_statistics()` - pandas-based, in-memory only
+- `dv.detect_issues()` - **5 issue types only** (highest impact):
   1. **Missing values** (high null rate) - Universal pain point
   2. **Duplicates** (exact row duplicates) - Confuses models
   3. **Schema violations** (unexpected nulls, out-of-range values) - Pipeline errors
   4. **Train-test skew** (JS divergence on 3 features max) - Serving mismatch
   5. **Label imbalance** (positive rate) - Ranking/recommendation universal
-- `hepta.display_issues()` - Simple print-based output
+- `dv.display_issues()` - Simple print-based output
 - **Python dataclasses** for statistics (NOT protocol buffers)
 - **Hardcoded policies** (no learning loop yet)
 
@@ -1278,7 +1278,7 @@ The full taxonomy specifies 20 issue types across 5 categories. This is over-eng
 **Goal:** Prove that DataVint's prescriptions improve model performance.
 
 **Add:**
-- `hepta.generate_manifest()` - Issue list → sample weights + filter masks
+- `dv.generate_manifest()` - Issue list → sample weights + filter masks
 - `manifest.apply()` - Three modes (reweight/filter/separate)
 - **Expand to 10 issue types:**
   - Add: Near-duplicates, label noise, temporal drift, underrepresented segments, feature-label correlation drop
@@ -1298,7 +1298,7 @@ The full taxonomy specifies 20 issue types across 5 categories. This is over-eng
 
 **Add:**
 - Full 20-issue taxonomy
-- `hepta.record_feedback()` - Telemetry and feedback loop
+- `dv.record_feedback()` - Telemetry and feedback loop
 - Cross-customer aggregate learning (Loop 2)
 - Streaming/chunked processing for large files (10M+ rows)
 - Domain-adaptive policy layer (per-team fine-tuning)

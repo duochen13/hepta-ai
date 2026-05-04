@@ -33,7 +33,7 @@ class ClassImbalanceDetector(BaseDetector):
         generation. Returns empty list if no label column.
 
     Example:
-        >>> from heptaai.statistics import generate_statistics
+        >>> from datavint.statistics import generate_statistics
         >>> import pandas as pd
         >>> # Highly imbalanced fraud detection dataset
         >>> df = pd.DataFrame({

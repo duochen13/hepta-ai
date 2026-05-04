@@ -1,5 +1,5 @@
 """
-Configuration for HeptaAI SDK.
+Configuration for DataVint SDK.
 
 Contains default thresholds for issue detection and logging setup.
 Users can override thresholds in v0.2+.
@@ -8,7 +8,7 @@ Users can override thresholds in v0.2+.
 import logging
 
 # Logging setup
-logger = logging.getLogger("heptaai")
+logger = logging.getLogger("datavint")
 logger.setLevel(logging.INFO)
 
 # Add console handler if not already present

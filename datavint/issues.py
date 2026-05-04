@@ -39,8 +39,8 @@ def detect_issues(
         List of all detected issues, sorted by severity (HIGH first)
 
     Example:
-        >>> from heptaai.statistics import generate_statistics
-        >>> from heptaai.issues import detect_issues, display_issues
+        >>> from datavint.statistics import generate_statistics
+        >>> from datavint.issues import detect_issues, display_issues
         >>>
         >>> train_stats = generate_statistics("train.csv", label_col="click")
         >>> test_stats = generate_statistics("test.csv", label_col="click")

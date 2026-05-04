@@ -13,13 +13,13 @@
 
 **Two new public API functions:**
 
-1. **`hepta.profile_dataset(data, label_col)`**
+1. **`dv.profile_dataset(data, label_col)`**
    - Quick dataset overview (< 1 second)
    - Shows: shape, types, missing values, labels, sample preview
    - Automatic quality warnings
    - Works with files or DataFrames
 
-2. **`hepta.compare_datasets(train, test, label_col)`**
+2. **`dv.compare_datasets(train, test, label_col)`**
    - Side-by-side comparison
    - Detects: distribution shifts, pipeline bugs, schema issues
    - Critical for pre-training validation
@@ -27,7 +27,7 @@
 ### Files Created
 
 ```
-heptaAI/
+datavint/
 ├── datavint/
 │   ├── __init__.py                      # ✅ Updated (exposed new API)
 │   └── profiling.py                     # ✅ New (467 lines)
@@ -66,7 +66,7 @@ heptaAI/
 
 ```python
 # User has no idea what they're analyzing
-stats = hepta.generate_statistics("mystery_data.csv")
+stats = dv.generate_statistics("mystery_data.csv")
 # ⏱️ 30 seconds later...
 # ⚠️ Discover: 10M rows, 80% missing values, severe imbalance
 # 😞 Wasted 30 seconds on bad data
@@ -76,7 +76,7 @@ stats = hepta.generate_statistics("mystery_data.csv")
 
 ```python
 # Quick 0.5 second overview
-hepta.profile_dataset("mystery_data.csv", label_col="target")
+dv.profile_dataset("mystery_data.csv", label_col="target")
 
 # Output immediately shows:
 # ⚠️ 10M rows
@@ -167,21 +167,21 @@ Label (label):
 ### 1. **Quick Data Exploration**
 ```python
 # New dataset from colleague - what is this?
-hepta.profile_dataset("data.csv")
+dv.profile_dataset("data.csv")
 # → Instant overview without reading code or docs
 ```
 
 ### 2. **Pre-Training Validation**
 ```python
 # Before spending GPU hours training
-hepta.compare_datasets("train.csv", "test.csv", label_col="click")
+dv.compare_datasets("train.csv", "test.csv", label_col="click")
 # → Catch distribution shifts before training
 ```
 
 ### 3. **Pipeline Monitoring**
 ```python
 # Daily data refresh check
-hepta.compare_datasets(f"{yesterday}/data.csv", f"{today}/data.csv")
+dv.compare_datasets(f"{yesterday}/data.csv", f"{today}/data.csv")
 # → Detect pipeline bugs immediately
 ```
 
@@ -189,7 +189,7 @@ hepta.compare_datasets(f"{yesterday}/data.csv", f"{today}/data.csv")
 ```python
 # In-memory DataFrame profiling
 df = pd.read_sql("SELECT * FROM events", conn)
-hepta.profile_dataset(df, label_col="conversion")
+dv.profile_dataset(df, label_col="conversion")
 # → No need to save to disk first
 ```
 
@@ -197,8 +197,8 @@ hepta.profile_dataset(df, label_col="conversion")
 ```bash
 # In GitHub Actions
 python -c "
-import datavint as hepta
-hepta.compare_datasets('train.csv', 'test.csv', 'click')
+import datavint as dv
+dv.compare_datasets('train.csv', 'test.csv', 'click')
 " || echo "Data quality check failed"
 ```
 
@@ -245,17 +245,17 @@ hepta.compare_datasets('train.csv', 'test.csv', 'click')
 **Recommended workflow:**
 
 ```
-1. Profile      hepta.profile_dataset()           ← NEW
+1. Profile      dv.profile_dataset()           ← NEW
    ↓
-2. Compare      hepta.compare_datasets()          ← NEW
+2. Compare      dv.compare_datasets()          ← NEW
    ↓
-3. Statistics   hepta.generate_statistics()       ← Existing
+3. Statistics   dv.generate_statistics()       ← Existing
    ↓
-4. Detect       hepta.detect_issues()             ← Existing
+4. Detect       dv.detect_issues()             ← Existing
    ↓
-5. Display      hepta.display_issues()            ← Existing
+5. Display      dv.display_issues()            ← Existing
    ↓
-6. Fix          hepta.generate_manifest()         ← Coming v0.2
+6. Fix          dv.generate_manifest()         ← Coming v0.2
 ```
 
 **Profiling (steps 1-2) are the new "front door" to DataVint.**
@@ -301,27 +301,27 @@ Potential additions based on user feedback:
 
 1. **Export profile to HTML/PDF**
    ```python
-   hepta.profile_dataset("data.csv", output="report.html")
+   dv.profile_dataset("data.csv", output="report.html")
    ```
 
 2. **Profile multiple datasets at once**
    ```python
-   hepta.profile_multiple(["train.csv", "val.csv", "test.csv"])
+   dv.profile_multiple(["train.csv", "val.csv", "test.csv"])
    ```
 
 3. **Custom profile templates**
    ```python
-   hepta.profile_dataset("data.csv", template="minimal")  # Less verbose
+   dv.profile_dataset("data.csv", template="minimal")  # Less verbose
    ```
 
 4. **Correlation matrix in profile**
    ```python
-   hepta.profile_dataset("data.csv", include_correlations=True)
+   dv.profile_dataset("data.csv", include_correlations=True)
    ```
 
 5. **Auto-detect domain (e-commerce, fraud, etc.)**
    ```python
-   hepta.profile_dataset("data.csv", auto_detect_domain=True)
+   dv.profile_dataset("data.csv", auto_detect_domain=True)
    # → "Detected: E-commerce clickstream data"
    ```
 

@@ -55,7 +55,7 @@ When you open a new Claude Code session:
 3. You see exactly where you left off
 
 ## Gstack Learnings (Built-in)
-Gstack also has built-in learnings at `~/.gstack/projects/heptaAI/learnings.jsonl`
+Gstack also has built-in learnings at `~/.gstack/projects/datavint/learnings.jsonl`
 - Use `/learn` skill to manage
 - Auto-loads at session start
 

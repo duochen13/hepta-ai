@@ -14,19 +14,19 @@ Automatically detect and fix data quality issues before training ML models.
 ## 🚀 Quick Start (30 seconds)
 
 ```python
-import datavint as hepta
+import datavint as dv
 
 # 1. Quick profile - understand your data (< 1 sec)
-hepta.profile_dataset("train.csv", label_col="click")
+dv.profile_dataset("train.csv", label_col="click")
 
 # 2. Detailed statistics (2-5 sec)
-stats = hepta.generate_statistics("train.csv", label_col="click")
+stats = dv.generate_statistics("train.csv", label_col="click")
 
 # 3. Detect quality issues (< 1 sec)
-issues = hepta.detect_issues(stats)
+issues = dv.detect_issues(stats)
 
 # 4. Display results
-hepta.display_issues(issues)
+dv.display_issues(issues)
 ```
 
 **Output:**
@@ -85,10 +85,10 @@ model.fit(train_data)  # → AUC: 0.762
 **DataVint workflow:**
 ```python
 # Detect issues BEFORE training (< 10 seconds total)
-hepta.profile_dataset("train.csv")              # Quick overview
-stats = hepta.generate_statistics("train.csv")  # Detailed analysis
-issues = hepta.detect_issues(stats)             # Find problems
-manifest = hepta.generate_manifest(issues)      # Generate fixes (v0.2)
+dv.profile_dataset("train.csv")              # Quick overview
+stats = dv.generate_statistics("train.csv")  # Detailed analysis
+issues = dv.detect_issues(stats)             # Find problems
+manifest = dv.generate_manifest(issues)      # Generate fixes (v0.2)
 
 # Train on cleaned data
 cleaned_data = manifest.apply("train.csv")
@@ -185,10 +185,10 @@ model.fit(cleaned_data)  # → AUC: 0.824 (+6.2%)
 ### Example 1: Quick Dataset Exploration
 
 ```python
-import datavint as hepta
+import datavint as dv
 
 # Profile a new dataset in < 1 second
-hepta.profile_dataset("mystery_data.csv", label_col="target")
+dv.profile_dataset("mystery_data.csv", label_col="target")
 ```
 
 **Output:**
@@ -223,7 +223,7 @@ hepta.profile_dataset("mystery_data.csv", label_col="target")
 
 ```python
 # Before training, check train vs test similarity
-hepta.compare_datasets(
+dv.compare_datasets(
     train_data="train.csv",
     test_data="test.csv",
     label_col="click"
@@ -248,12 +248,12 @@ Label (1)              48.2%           47.8%        -0.4%
 
 ```python
 # Full workflow: Profile → Stats → Detect → Display
-hepta.profile_dataset("train.csv", label_col="click")
+dv.profile_dataset("train.csv", label_col="click")
 
-stats = hepta.generate_statistics("train.csv", label_col="click")
-issues = hepta.detect_issues(stats)
+stats = dv.generate_statistics("train.csv", label_col="click")
+issues = dv.detect_issues(stats)
 
-hepta.display_issues(issues)
+dv.display_issues(issues)
 ```
 
 ---
@@ -261,7 +261,7 @@ hepta.display_issues(issues)
 ## 🗂️ Project Structure
 
 ```
-heptaAI/
+datavint/
 ├── datavint/                    # Core package
 │   ├── __init__.py            # Public API
 │   ├── profiling.py           # Data profiling

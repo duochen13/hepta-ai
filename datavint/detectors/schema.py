@@ -41,7 +41,7 @@ class SchemaViolationDetector(BaseDetector):
         For numeric range violations (values outside min/max), see NumericRangeDetector.
 
     Example:
-        >>> from heptaai.statistics import generate_statistics
+        >>> from datavint.statistics import generate_statistics
         >>> import pandas as pd
         >>> train = pd.DataFrame({
         ...     "country": ["US", "UK", "CA"],

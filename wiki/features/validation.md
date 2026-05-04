@@ -84,7 +84,7 @@ df = dask.read_csv("s3://bucket/*.csv")  # Distributed
 
 ```python
 import pandas as pd
-import datavint as hepta
+import datavint as dv
 from validation import fix_dataset, train_and_evaluate, compare_metrics
 
 # 1. Load raw dirty data (e.g., Kaggle Titanic with missing Age)
@@ -113,10 +113,10 @@ print(f"NE:  {metrics_before['ne']:.3f}")
 print("\n" + "=" * 60)
 print("HEPTAAI: Detecting quality issues")
 print("=" * 60)
-hepta.profile_dataset(train_raw, label_col=label)
-stats = hepta.generate_statistics(train_raw, label_col=label)
-issues = hepta.detect_issues(stats)
-hepta.display_issues(issues)
+dv.profile_dataset(train_raw, label_col=label)
+stats = dv.generate_statistics(train_raw, label_col=label)
+issues = dv.detect_issues(stats)
+dv.display_issues(issues)
 
 # 4. Apply Fixes
 print("\n" + "=" * 60)
@@ -223,7 +223,7 @@ Metrics Before → After:
 ## 🗂️ File Structure
 
 ```
-heptaAI/
+datavint/
 ├── validation/                      # Validation module
 │   ├── __init__.py                 # Public API
 │   ├── data_fixer.py               # ⚠️ MVP: In-memory fixes
@@ -287,10 +287,10 @@ from datavint.distributed import fix_dataset_distributed
 train_raw = dd.read_parquet("s3://bucket/train/*.parquet")
 
 # Generate statistics (distributed)
-stats = hepta.generate_statistics_distributed(train_raw, label_col="click")
+stats = dv.generate_statistics_distributed(train_raw, label_col="click")
 
 # Detect issues
-issues = hepta.detect_issues(stats)
+issues = dv.detect_issues(stats)
 
 # Apply fixes (distributed, no single-machine bottleneck)
 train_clean = fix_dataset_distributed(train_raw, issues, label_col="click")
@@ -308,21 +308,21 @@ metrics = train_and_evaluate_distributed(train_clean, test, features, "click")
 from datavint.io import read_from_s3, read_from_bigquery
 
 # S3
-stats = hepta.generate_statistics(
+stats = dv.generate_statistics(
     data_source="s3://bucket/train.parquet",
     label_col="click",
     backend="pyarrow"  # Zero-copy
 )
 
 # BigQuery
-stats = hepta.generate_statistics(
+stats = dv.generate_statistics(
     data_source="bigquery://project.dataset.table",
     label_col="click",
     backend="bigquery"
 )
 
 # HDFS
-stats = hepta.generate_statistics(
+stats = dv.generate_statistics(
     data_source="hdfs://namenode/path/to/data",
     label_col="click",
     backend="spark"

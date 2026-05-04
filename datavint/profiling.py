@@ -36,8 +36,8 @@ def profile_dataset(
         label_col: Optional label column name
 
     Example:
-        >>> import heptaai as hepta
-        >>> hepta.profile_dataset("train.csv", label_col="click")
+        >>> import datavint as dv
+        >>> dv.profile_dataset("train.csv", label_col="click")
 
         ═══════════════════════════════════════════════════════════
         📊 Dataset Profile
@@ -221,7 +221,7 @@ def profile_dataset(
 
     print()
     print("=" * 63)
-    print("Next step: Run hepta.generate_statistics() for detailed analysis")
+    print("Next step: Run dv.generate_statistics() for detailed analysis")
     print("=" * 63)
 
 
@@ -241,7 +241,7 @@ def compare_datasets(
         label_col: Optional label column name
 
     Example:
-        >>> hepta.compare_datasets("train.csv", "test.csv", label_col="click")
+        >>> dv.compare_datasets("train.csv", "test.csv", label_col="click")
 
         ═══════════════════════════════════════════════════════════
         📊 Dataset Comparison: Train vs Test
@@ -345,5 +345,5 @@ def compare_datasets(
 
     print()
     print("=" * 63)
-    print("Next: Run hepta.detect_issues() with serving_statistics for detailed skew analysis")
+    print("Next: Run dv.detect_issues() with serving_statistics for detailed skew analysis")
     print("=" * 63)

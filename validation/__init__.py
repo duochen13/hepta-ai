@@ -1,5 +1,5 @@
 """
-Validation module for measuring HeptaAI's impact on model performance.
+Validation module for measuring DataVint's impact on model performance.
 
 ⚠️ MVP LIMITATION: This module assumes datasets < 10GB that fit in memory.
    For production-scale data (>10GB), use manifest-based approach (v0.2+).
@@ -11,7 +11,7 @@ Components:
 
 Typical workflow:
     1. Train baseline model on raw data → metrics_before
-    2. Run HeptaAI detection → find issues
+    2. Run DataVint detection → find issues
     3. Apply fixes → cleaned dataset
     4. Train on clean data → metrics_after
     5. Compare metrics → prove value

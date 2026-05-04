@@ -14,7 +14,7 @@ This example shows the correct workflow:
 
 import pandas as pd
 import numpy as np
-import datavint as hepta
+import datavint as dv
 from validation import fix_dataset, train_and_evaluate
 from validation.metrics import compare_metrics
 
@@ -76,17 +76,17 @@ def main():
 
     # Profile first (quick overview)
     print("\n📊 Quick Profile:")
-    hepta.profile_dataset(train_raw, label_col=label)
+    dv.profile_dataset(train_raw, label_col=label)
     print()
 
     # Generate detailed statistics
-    stats = hepta.generate_statistics(train_raw, label_col=label)
+    stats = dv.generate_statistics(train_raw, label_col=label)
 
     # Detect issues
-    issues = hepta.detect_issues(stats)
+    issues = dv.detect_issues(stats)
 
     print(f"\n🔍 Issues Detected: {len(issues)}")
-    hepta.display_issues(issues)
+    dv.display_issues(issues)
     print()
 
     # =========================================================================

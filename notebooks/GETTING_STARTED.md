@@ -8,7 +8,7 @@ Quick guide to running DataVint notebooks in 3 minutes.
 
 ```bash
 # From project root directory
-cd /path/to/heptaAI
+cd /path/to/datavint
 
 # Install DataVint in development mode
 pip install -e .
@@ -85,10 +85,10 @@ Then navigate to:
 ### Profile Your Own Dataset
 
 ```python
-import datavint as hepta
+import datavint as dv
 
 # Replace with your file path
-hepta.profile_dataset(
+dv.profile_dataset(
     "your_data.csv",
     label_col="your_label_column"
 )
@@ -97,7 +97,7 @@ hepta.profile_dataset(
 ### Check Train/Test Similarity
 
 ```python
-hepta.compare_datasets(
+dv.compare_datasets(
     train_data="your_train.csv",
     test_data="your_test.csv",
     label_col="your_label"
@@ -108,13 +108,13 @@ hepta.compare_datasets(
 
 ```python
 # Generate stats
-stats = hepta.generate_statistics("your_data.csv", label_col="target")
+stats = dv.generate_statistics("your_data.csv", label_col="target")
 
 # Detect issues
-issues = hepta.detect_issues(stats)
+issues = dv.detect_issues(stats)
 
 # Display results
-hepta.display_issues(issues)
+dv.display_issues(issues)
 ```
 
 ## 🐛 Troubleshooting
@@ -126,7 +126,7 @@ hepta.display_issues(issues)
 **Solution:**
 ```bash
 # Make sure you're in project root
-cd /path/to/heptaAI  # ← Important!
+cd /path/to/datavint  # ← Important!
 jupyter notebook
 ```
 
@@ -152,10 +152,10 @@ python playground/download_movielens.py
 **Solution:** Use profiling (lightweight) instead of full statistics:
 ```python
 # This is fast and memory-efficient
-hepta.profile_dataset("large_file.csv")
+dv.profile_dataset("large_file.csv")
 
 # This might crash on very large files
-# stats = hepta.generate_statistics("large_file.csv")  # Skip for now
+# stats = dv.generate_statistics("large_file.csv")  # Skip for now
 ```
 
 ### Problem: Slow notebook performance
@@ -164,11 +164,11 @@ hepta.profile_dataset("large_file.csv")
 
 ```python
 # Quick check (< 1 sec)
-hepta.profile_dataset("data.csv")
+dv.profile_dataset("data.csv")
 # ↑ Shows missing values, imbalance, duplicates
 
 # If profile looks good, then run full stats
-stats = hepta.generate_statistics("data.csv")
+stats = dv.generate_statistics("data.csv")
 # ↑ Takes longer, but gives detailed analysis
 ```
 
@@ -178,10 +178,10 @@ stats = hepta.generate_statistics("data.csv")
 
 ```python
 # ❌ Bad: Jump straight to statistics (slow)
-stats = hepta.generate_statistics("mystery_data.csv")
+stats = dv.generate_statistics("mystery_data.csv")
 
 # ✅ Good: Profile first (fast overview)
-hepta.profile_dataset("mystery_data.csv")
+dv.profile_dataset("mystery_data.csv")
 # → See it's 10M rows with 50% missing values
 # → Decide to clean data BEFORE running full stats
 ```
@@ -190,7 +190,7 @@ hepta.profile_dataset("mystery_data.csv")
 
 ```python
 # Before training, always check:
-hepta.compare_datasets("train.csv", "test.csv", label_col="target")
+dv.compare_datasets("train.csv", "test.csv", label_col="target")
 
 # Catches:
 # - Distribution shifts
@@ -205,7 +205,7 @@ import pandas as pd
 
 # No need to save to disk
 df = pd.read_sql("SELECT * FROM users", conn)
-hepta.profile_dataset(df, label_col="churned")
+dv.profile_dataset(df, label_col="churned")
 ```
 
 ### 4. Bookmark Quick Cells
@@ -214,19 +214,19 @@ Keep these snippets handy for exploration:
 
 ```python
 # Quick profile
-hepta.profile_dataset("data.csv", label_col="target")
+dv.profile_dataset("data.csv", label_col="target")
 ```
 
 ```python
 # Quick comparison
-hepta.compare_datasets("train.csv", "test.csv", label_col="target")
+dv.compare_datasets("train.csv", "test.csv", label_col="target")
 ```
 
 ```python
 # Full workflow
-stats = hepta.generate_statistics("data.csv", label_col="target")
-issues = hepta.detect_issues(stats)
-hepta.display_issues(issues)
+stats = dv.generate_statistics("data.csv", label_col="target")
+issues = dv.detect_issues(stats)
+dv.display_issues(issues)
 ```
 
 ## 🔗 Next Steps

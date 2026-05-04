@@ -22,13 +22,13 @@ from datavint.types import DatasetStatistics
 @pytest.fixture
 def movielens_train_path():
     """Path to MovieLens training data."""
-    return Path("/Users/duochen/Desktop/career/heptaAI/playground/raw_data/movielens_train.csv")
+    return Path("/Users/duochen/Desktop/career/datavint/playground/raw_data/movielens_train.csv")
 
 
 @pytest.fixture
 def movielens_test_path():
     """Path to MovieLens test data."""
-    return Path("/Users/duochen/Desktop/career/heptaAI/playground/raw_data/movielens_test.csv")
+    return Path("/Users/duochen/Desktop/career/datavint/playground/raw_data/movielens_test.csv")
 
 
 @pytest.fixture

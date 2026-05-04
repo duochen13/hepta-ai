@@ -32,7 +32,7 @@ class NumericRangeDetector(BaseDetector):
         if serving_statistics is None.
 
     Example:
-        >>> from heptaai.statistics import generate_statistics
+        >>> from datavint.statistics import generate_statistics
         >>> import pandas as pd
         >>> train = pd.DataFrame({"age": [20, 30, 40, 50, 60]})  # Range: 20-60
         >>> test = pd.DataFrame({"age": [25, 150]})  # 150 is way out of range!

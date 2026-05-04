@@ -42,13 +42,13 @@ docs/
 
 **Quick example:**
 ```python
-import datavint as hepta
+import datavint as dv
 
 # Quick profile
-hepta.profile_dataset("train.csv", label_col="click")
+dv.profile_dataset("train.csv", label_col="click")
 
 # Compare train vs test
-hepta.compare_datasets("train.csv", "test.csv", label_col="click")
+dv.compare_datasets("train.csv", "test.csv", label_col="click")
 ```
 
 ### Statistics Generation (v0.1)
@@ -60,7 +60,7 @@ hepta.compare_datasets("train.csv", "test.csv", label_col="click")
 
 **Quick example:**
 ```python
-stats = hepta.generate_statistics("train.csv", label_col="click")
+stats = dv.generate_statistics("train.csv", label_col="click")
 print(f"Rows: {stats.n_rows:,}")
 print(f"Duplicate rate: {stats.duplicate_rate:.1%}")
 ```
@@ -75,8 +75,8 @@ print(f"Duplicate rate: {stats.duplicate_rate:.1%}")
 
 **Quick example:**
 ```python
-issues = hepta.detect_issues(statistics=train_stats, serving_statistics=test_stats)
-hepta.display_issues(issues)
+issues = dv.detect_issues(statistics=train_stats, serving_statistics=test_stats)
+dv.display_issues(issues)
 ```
 
 ### Manifest Generation (v0.2+)

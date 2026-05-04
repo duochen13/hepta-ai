@@ -31,7 +31,7 @@ class DuplicatesDetector(BaseDetector):
         performance. This detector only checks the pre-computed duplicate_rate.
 
     Example:
-        >>> from heptaai.statistics import generate_statistics
+        >>> from datavint.statistics import generate_statistics
         >>> import pandas as pd
         >>> df = pd.DataFrame({
         ...     "user_id": [1, 2, 2, 3, 3, 3],  # 50% duplicates

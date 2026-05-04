@@ -37,7 +37,7 @@ class TrainTestSkewDetector(BaseDetector):
         is None, returns empty list (no skew can be detected).
 
     Example:
-        >>> from heptaai.statistics import generate_statistics
+        >>> from datavint.statistics import generate_statistics
         >>> train_stats = generate_statistics("train.csv")
         >>> test_stats = generate_statistics("test.csv")
         >>> detector = TrainTestSkewDetector()

@@ -9,9 +9,9 @@ Quick dataset overview before running quality detection.
 Get a comprehensive overview of your dataset in seconds:
 
 ```python
-import datavint as hepta
+import datavint as dv
 
-hepta.profile_dataset("train.csv", label_col="click")
+dv.profile_dataset("train.csv", label_col="click")
 ```
 
 **Output:**
@@ -46,7 +46,7 @@ hepta.profile_dataset("train.csv", label_col="click")
    ✅ Class balance looks good
 
 ===============================================================
-Next step: Run hepta.generate_statistics() for detailed analysis
+Next step: Run dv.generate_statistics() for detailed analysis
 ===============================================================
 ```
 
@@ -55,7 +55,7 @@ Next step: Run hepta.generate_statistics() for detailed analysis
 Compare two datasets side-by-side to spot distribution shifts:
 
 ```python
-hepta.compare_datasets(
+dv.compare_datasets(
     train_data="train.csv",
     test_data="test.csv",
     label_col="click"
@@ -89,26 +89,26 @@ Label (click):
 ### Recommended Usage Pattern
 
 ```python
-import datavint as hepta
+import datavint as dv
 
 # ═══════════════════════════════════════════════════════════════
 # Step 1: Quick Profile (understand what you have)
 # ═══════════════════════════════════════════════════════════════
-hepta.profile_dataset("train.csv", label_col="click")
+dv.profile_dataset("train.csv", label_col="click")
 
 # Quick sanity check: train vs test
-hepta.compare_datasets("train.csv", "test.csv", label_col="click")
+dv.compare_datasets("train.csv", "test.csv", label_col="click")
 
 # ═══════════════════════════════════════════════════════════════
 # Step 2: Detailed Statistics
 # ═══════════════════════════════════════════════════════════════
-train_stats = hepta.generate_statistics("train.csv", label_col="click")
-test_stats = hepta.generate_statistics("test.csv", label_col="click")
+train_stats = dv.generate_statistics("train.csv", label_col="click")
+test_stats = dv.generate_statistics("test.csv", label_col="click")
 
 # ═══════════════════════════════════════════════════════════════
 # Step 3: Issue Detection
 # ═══════════════════════════════════════════════════════════════
-issues = hepta.detect_issues(
+issues = dv.detect_issues(
     statistics=train_stats,
     serving_statistics=test_stats  # Enables train-test skew detection
 )
@@ -116,12 +116,12 @@ issues = hepta.detect_issues(
 # ═══════════════════════════════════════════════════════════════
 # Step 4: Review Results
 # ═══════════════════════════════════════════════════════════════
-hepta.display_issues(issues)
+dv.display_issues(issues)
 
 # ═══════════════════════════════════════════════════════════════
 # Step 5: Generate Manifest (v0.2+)
 # ═══════════════════════════════════════════════════════════════
-# manifest = hepta.generate_manifest(train_stats, issues)
+# manifest = dv.generate_manifest(train_stats, issues)
 # cleaned_data = manifest.apply("train.csv")
 ```
 
@@ -151,7 +151,7 @@ hepta.display_issues(issues)
 
 ```python
 # New dataset from a colleague - what is this?
-hepta.profile_dataset("mystery_data.csv")
+dv.profile_dataset("mystery_data.csv")
 
 # Output shows:
 # - 100K rows × 25 columns (user behavior data)
@@ -164,7 +164,7 @@ hepta.profile_dataset("mystery_data.csv")
 
 ```python
 # Before spending hours training, check the data
-hepta.compare_datasets("train.csv", "test.csv", label_col="converted")
+dv.compare_datasets("train.csv", "test.csv", label_col="converted")
 
 # Output shows:
 # ⚠️  Label distribution shift detected (>8% difference)
@@ -181,7 +181,7 @@ import datetime
 today = datetime.date.today()
 yesterday = today - datetime.timedelta(days=1)
 
-hepta.compare_datasets(
+dv.compare_datasets(
     f"data/{yesterday}/train.csv",
     f"data/{today}/train.csv",
     label_col="click"
@@ -200,7 +200,7 @@ import pandas as pd
 # Working with DataFrames in Jupyter
 df = pd.read_sql("SELECT * FROM user_events", connection)
 
-hepta.profile_dataset(df, label_col="conversion")
+dv.profile_dataset(df, label_col="conversion")
 # No need to save to disk first!
 ```
 

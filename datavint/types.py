@@ -1,5 +1,5 @@
 """
-Core data structures for HeptaAI SDK.
+Core data structures for DataVint SDK.
 
 This module defines the dataclasses used throughout the SDK:
 - FeatureStats: Statistics for a single feature

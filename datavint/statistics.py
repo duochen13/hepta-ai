@@ -81,8 +81,8 @@ def generate_statistics(
         KeyError: If label_col not in DataFrame columns
 
     Example:
-        >>> import heptaai as hepta
-        >>> stats = hepta.generate_statistics("train.csv", label_col="click")
+        >>> import datavint as dv
+        >>> stats = dv.generate_statistics("train.csv", label_col="click")
         >>> print(f"{stats.n_rows:,} rows, {stats.n_cols} columns")
         80,668 rows, 8 columns
     """

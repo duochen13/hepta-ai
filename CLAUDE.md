@@ -1,4 +1,4 @@
-# HeptaAI Project Instructions
+# DataVint Project Instructions
 
 ## Memory System
 

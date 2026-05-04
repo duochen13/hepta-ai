@@ -83,12 +83,12 @@ def fix_dataset(
         (df_clean, report): Cleaned dataframe and fix report
 
     Example:
-        >>> import datavint as hepta
+        >>> import datavint as dv
         >>> from validation import fix_dataset
         >>>
         >>> # Detect issues
-        >>> stats = hepta.generate_statistics("train.csv", label_col="click")
-        >>> issues = hepta.detect_issues(stats)
+        >>> stats = dv.generate_statistics("train.csv", label_col="click")
+        >>> issues = dv.detect_issues(stats)
         >>>
         >>> # Apply fixes
         >>> df = pd.read_csv("train.csv")

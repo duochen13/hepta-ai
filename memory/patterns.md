@@ -19,7 +19,7 @@
 **Pipeline:**
 ```
 1. Train on DIRTY data → metrics_before
-2. Detect issues with HeptaAI
+2. Detect issues with DataVint
 3. Apply fixes (e.g., remove duplicates)
 4. Retrain on CLEAN data → metrics_after
 5. Compare: delta = metrics_after - metrics_before
@@ -44,7 +44,7 @@ Delta: +0.0037 (+0.4%)
 - Result: Poor generalization to test set
 
 **File References:**
-- Detection: `heptaai/issues.py` (detect_issues)
+- Detection: `datavint/issues.py` (detect_issues)
 - Fixing: `validation/data_fixer.py` (fix_dataset)
 - Training: `validation/model_trainer.py` (train_and_evaluate)
 - Metrics: `validation/metrics.py` (compute_metrics)

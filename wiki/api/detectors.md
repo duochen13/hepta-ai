@@ -24,17 +24,17 @@ DataVint provides automated detection of 6 types of data quality issues that can
 ## Quick Start
 
 ```python
-import datavint as hepta
+import datavint as dv
 
 # 1. Generate statistics
-train_stats = hepta.generate_statistics("train.csv", label_col="click")
-test_stats = hepta.generate_statistics("test.csv", label_col="click")
+train_stats = dv.generate_statistics("train.csv", label_col="click")
+test_stats = dv.generate_statistics("test.csv", label_col="click")
 
 # 2. Detect issues
-issues = hepta.detect_issues(train_stats, serving_statistics=test_stats)
+issues = dv.detect_issues(train_stats, serving_statistics=test_stats)
 
 # 3. Display results
-hepta.display_issues(issues)
+dv.display_issues(issues)
 ```
 
 **Output:**
@@ -93,8 +93,8 @@ def detect_issues(
 
 ```python
 # Only detects: missing values, duplicates, class imbalance
-train_stats = hepta.generate_statistics("train.csv", label_col="target")
-issues = hepta.detect_issues(train_stats)
+train_stats = dv.generate_statistics("train.csv", label_col="target")
+issues = dv.detect_issues(train_stats)
 
 # Detects:
 # ✅ Missing values
@@ -109,10 +109,10 @@ issues = hepta.detect_issues(train_stats)
 
 ```python
 # Detects all 6 issue types
-train_stats = hepta.generate_statistics("train.csv", label_col="click")
-test_stats = hepta.generate_statistics("test.csv", label_col="click")
+train_stats = dv.generate_statistics("train.csv", label_col="click")
+test_stats = dv.generate_statistics("test.csv", label_col="click")
 
-issues = hepta.detect_issues(train_stats, serving_statistics=test_stats)
+issues = dv.detect_issues(train_stats, serving_statistics=test_stats)
 
 # Detects:
 # ✅ Missing values
@@ -126,7 +126,7 @@ issues = hepta.detect_issues(train_stats, serving_statistics=test_stats)
 **Example 3: Programmatic issue handling**
 
 ```python
-issues = hepta.detect_issues(train_stats, serving_statistics=test_stats)
+issues = dv.detect_issues(train_stats, serving_statistics=test_stats)
 
 # Filter by severity
 high_severity = [i for i in issues if i.severity.value == "high"]
@@ -179,15 +179,15 @@ Each issue shows:
 **Example 1: Standard display**
 
 ```python
-issues = hepta.detect_issues(train_stats, serving_statistics=test_stats)
-hepta.display_issues(issues)
+issues = dv.detect_issues(train_stats, serving_statistics=test_stats)
+dv.display_issues(issues)
 ```
 
 **Example 2: No issues detected**
 
 ```python
-issues = hepta.detect_issues(clean_stats)
-hepta.display_issues(issues)
+issues = dv.detect_issues(clean_stats)
+dv.display_issues(issues)
 # Output: ✅ No issues detected!
 ```
 
@@ -195,11 +195,11 @@ hepta.display_issues(issues)
 
 ```python
 # Only show high severity issues
-issues = hepta.detect_issues(train_stats, serving_statistics=test_stats)
+issues = dv.detect_issues(train_stats, serving_statistics=test_stats)
 high_only = [i for i in issues if i.severity.value == "high"]
 
 print("=== CRITICAL ISSUES ONLY ===")
-hepta.display_issues(high_only)
+dv.display_issues(high_only)
 ```
 
 ---
@@ -371,7 +371,7 @@ Dataclass representing a detected quality issue.
 **Example:**
 
 ```python
-issues = hepta.detect_issues(train_stats)
+issues = dv.detect_issues(train_stats)
 for issue in issues:
     print(f"Type: {issue.type.value}")
     print(f"Feature: {issue.feature}")
@@ -404,7 +404,7 @@ class IssueType(Enum):
 ```python
 from datavint import IssueType
 
-issues = hepta.detect_issues(train_stats)
+issues = dv.detect_issues(train_stats)
 
 # Filter by type
 skew_issues = [i for i in issues if i.type == IssueType.TRAIN_TEST_SKEW]
@@ -431,7 +431,7 @@ class IssueSeverity(Enum):
 ```python
 from datavint import IssueSeverity
 
-issues = hepta.detect_issues(train_stats)
+issues = dv.detect_issues(train_stats)
 
 # Count by severity
 high = sum(1 for i in issues if i.severity == IssueSeverity.HIGH)
@@ -448,21 +448,21 @@ print(f"HIGH: {high}, MEDIUM: {medium}, LOW: {low}")
 ### Pre-Training Quality Check
 
 ```python
-import datavint as hepta
+import datavint as dv
 
 # 1. Profile first (quick overview)
-hepta.profile_dataset("train.csv", label_col="click")
-hepta.compare_datasets("train.csv", "test.csv", label_col="click")
+dv.profile_dataset("train.csv", label_col="click")
+dv.compare_datasets("train.csv", "test.csv", label_col="click")
 
 # 2. Generate detailed statistics
-train_stats = hepta.generate_statistics("train.csv", label_col="click")
-test_stats = hepta.generate_statistics("test.csv", label_col="click")
+train_stats = dv.generate_statistics("train.csv", label_col="click")
+test_stats = dv.generate_statistics("test.csv", label_col="click")
 
 # 3. Detect issues
-issues = hepta.detect_issues(train_stats, serving_statistics=test_stats)
+issues = dv.detect_issues(train_stats, serving_statistics=test_stats)
 
 # 4. Display results
-hepta.display_issues(issues)
+dv.display_issues(issues)
 
 # 5. Programmatic decision
 high_severity = [i for i in issues if i.severity.value == "high"]
@@ -481,20 +481,20 @@ else:
 ```python
 # In your CI/CD pipeline
 import sys
-import datavint as hepta
+import datavint as dv
 
 # Run quality checks
-train_stats = hepta.generate_statistics("data/train.csv", label_col="target")
-test_stats = hepta.generate_statistics("data/test.csv", label_col="target")
+train_stats = dv.generate_statistics("data/train.csv", label_col="target")
+test_stats = dv.generate_statistics("data/test.csv", label_col="target")
 
-issues = hepta.detect_issues(train_stats, serving_statistics=test_stats)
+issues = dv.detect_issues(train_stats, serving_statistics=test_stats)
 
 # Fail pipeline if high severity issues detected
 high_severity_count = sum(1 for i in issues if i.severity.value == "high")
 
 if high_severity_count > 0:
     print(f"❌ PIPELINE FAILED: {high_severity_count} high severity issue(s)")
-    hepta.display_issues(issues)
+    dv.display_issues(issues)
     sys.exit(1)
 else:
     print("✅ Data quality check passed")
@@ -506,23 +506,23 @@ else:
 ### Daily Pipeline Monitoring
 
 ```python
-import datavint as hepta
+import datavint as dv
 from datetime import datetime, timedelta
 
 # Check today's data refresh
 yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
 today = datetime.now().strftime("%Y-%m-%d")
 
-yesterday_stats = hepta.generate_statistics(f"data/{yesterday}/train.csv")
-today_stats = hepta.generate_statistics(f"data/{today}/train.csv")
+yesterday_stats = dv.generate_statistics(f"data/{yesterday}/train.csv")
+today_stats = dv.generate_statistics(f"data/{today}/train.csv")
 
 # Detect any distribution shifts
-issues = hepta.detect_issues(yesterday_stats, serving_statistics=today_stats)
+issues = dv.detect_issues(yesterday_stats, serving_statistics=today_stats)
 
 # Alert on any issues
 if len(issues) > 0:
     print(f"🚨 Data pipeline alert for {today}")
-    hepta.display_issues(issues)
+    dv.display_issues(issues)
     # Send alert to Slack, PagerDuty, etc.
 else:
     print(f"✅ Data pipeline healthy for {today}")
@@ -549,7 +549,7 @@ Future versions will support custom thresholds:
 
 ```python
 # Coming in v0.2
-issues = hepta.detect_issues(
+issues = dv.detect_issues(
     train_stats,
     thresholds={
         "missing_values": {"high": 0.3, "medium": 0.1},  # 30% / 10%
@@ -589,35 +589,35 @@ This means:
 
 ```python
 # ❌ Bad - only detects 3 of 6 issue types
-issues = hepta.detect_issues(train_stats)
+issues = dv.detect_issues(train_stats)
 
 # ✅ Good - detects all 6 issue types
-issues = hepta.detect_issues(train_stats, serving_statistics=test_stats)
+issues = dv.detect_issues(train_stats, serving_statistics=test_stats)
 ```
 
 ### 2. Profile Before Detection
 
 ```python
 # ✅ Good workflow
-hepta.profile_dataset("train.csv")  # Quick overview (< 1 sec)
-stats = hepta.generate_statistics("train.csv")  # Detailed (2-5 sec)
-issues = hepta.detect_issues(stats)  # Detection (< 1 sec)
+dv.profile_dataset("train.csv")  # Quick overview (< 1 sec)
+stats = dv.generate_statistics("train.csv")  # Detailed (2-5 sec)
+issues = dv.detect_issues(stats)  # Detection (< 1 sec)
 ```
 
 ### 3. Address High Severity First
 
 ```python
-issues = hepta.detect_issues(train_stats, serving_statistics=test_stats)
+issues = dv.detect_issues(train_stats, serving_statistics=test_stats)
 
 # Sort and prioritize
 high = [i for i in issues if i.severity.value == "high"]
 medium = [i for i in issues if i.severity.value == "medium"]
 
 print("=== FIX THESE FIRST ===")
-hepta.display_issues(high)
+dv.display_issues(high)
 
 print("\n=== CONSIDER FIXING ===")
-hepta.display_issues(medium)
+dv.display_issues(medium)
 ```
 
 ### 4. Track Issues Over Time
@@ -626,7 +626,7 @@ hepta.display_issues(medium)
 import json
 from datetime import datetime
 
-issues = hepta.detect_issues(train_stats, serving_statistics=test_stats)
+issues = dv.detect_issues(train_stats, serving_statistics=test_stats)
 
 # Log to file for trend tracking
 log_entry = {
@@ -654,7 +654,7 @@ with open("quality_log.jsonl", "a") as f:
 **Solution:**
 ```python
 # Verify test set is used
-issues = hepta.detect_issues(train_stats, serving_statistics=test_stats)
+issues = dv.detect_issues(train_stats, serving_statistics=test_stats)
 
 # Manually inspect statistics
 print(f"Label rate: {train_stats.label_rate:.2%}")
@@ -677,7 +677,7 @@ for name, stats in train_stats.features.items():
 **Solution:**
 ```python
 # Filter by severity
-issues = hepta.detect_issues(train_stats, serving_statistics=test_stats)
+issues = dv.detect_issues(train_stats, serving_statistics=test_stats)
 critical_only = [i for i in issues if i.severity.value == "high"]
 
 # Or custom threshold checks (v0.2+)

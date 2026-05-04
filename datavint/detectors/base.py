@@ -43,7 +43,7 @@ class BaseDetector(ABC):
 
         Args:
             config: Optional configuration dict for thresholds and settings.
-                   If None, uses defaults from heptaai.config.
+                   If None, uses defaults from datavint.config.
 
         Example:
             >>> detector = MissingValuesDetector(config={"high": 0.6, "medium": 0.3})

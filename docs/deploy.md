@@ -5,14 +5,14 @@
 ### Steps:
 1. **Commit and push website to GitHub**:
    ```bash
-   cd /Users/duochen/Desktop/career/heptaAI
+   cd /Users/duochen/Desktop/career/datavint
    git add website/
    git commit -m "Add DataVint landing page website"
    git push origin main
    ```
 
 2. **Enable GitHub Pages**:
-   - Go to https://github.com/duochen13/hepta-ai/settings/pages
+   - Go to https://github.com/duochen13/datavint/settings/pages
    - Under "Source", select "Deploy from a branch"
    - Choose branch: `main`
    - Choose folder: `/website`
@@ -20,7 +20,7 @@
 
 3. **Your site will be live at**:
    ```
-   https://duochen13.github.io/hepta-ai/
+   https://duochen13.github.io/datavint/
    ```
 
    Or with custom domain:
@@ -60,7 +60,7 @@
 
 2. **Deploy**:
    ```bash
-   cd /Users/duochen/Desktop/career/heptaAI/website
+   cd /Users/duochen/Desktop/career/datavint/website
    vercel --prod
    ```
 
@@ -84,7 +84,7 @@
 
 2. **Deploy**:
    ```bash
-   cd /Users/duochen/Desktop/career/heptaAI/website
+   cd /Users/duochen/Desktop/career/datavint/website
    surge . datavint.surge.sh
    ```
 
@@ -103,13 +103,13 @@ I've created a script to deploy to GitHub Pages automatically:
 
 ```bash
 #!/bin/bash
-cd /Users/duochen/Desktop/career/heptaAI
+cd /Users/duochen/Desktop/career/datavint
 git add website/
 git commit -m "Deploy DataVint landing page"
 git push origin main
 echo "✅ Pushed to GitHub!"
-echo "📝 Now enable GitHub Pages at: https://github.com/duochen13/hepta-ai/settings/pages"
-echo "🌐 Your site will be live at: https://duochen13.github.io/hepta-ai/"
+echo "📝 Now enable GitHub Pages at: https://github.com/duochen13/datavint/settings/pages"
+echo "🌐 Your site will be live at: https://duochen13.github.io/datavint/"
 ```
 
 ---
@@ -125,7 +125,7 @@ echo "🌐 Your site will be live at: https://duochen13.github.io/hepta-ai/"
 
 **After enabling GitHub Pages**, your website will be accessible at:
 ```
-https://duochen13.github.io/hepta-ai/
+https://duochen13.github.io/datavint/
 ```
 
 To use a custom domain like `datavint.com`:
