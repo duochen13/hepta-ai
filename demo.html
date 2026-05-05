@@ -13,7 +13,7 @@
             --bg-dark: #0a0e1a;
             --bg-panel: #12172b;
             --bg-hover: #1a2137;
-            --bg-editor: #0d1117;
+            --bg-editor: #282c34;
             --border: #2a3551;
             --border-active: #00f0ff;
             --text-primary: #e8edf5;
@@ -25,12 +25,12 @@
             --accent-orange: #ff6b35;
             --shadow-glow: rgba(0, 240, 255, 0.2);
 
-            /* Syntax Colors */
-            --syntax-keyword: #ff79c6;
-            --syntax-function: #50fa7b;
-            --syntax-string: #f1fa8c;
-            --syntax-comment: #6272a4;
-            --syntax-number: #bd93f9;
+            /* Syntax Colors - Atom One Dark (VSCode) */
+            --syntax-keyword: #c678dd;      /* Purple */
+            --syntax-function: #61afef;     /* Blue */
+            --syntax-string: #98c379;       /* Green */
+            --syntax-comment: #5c6370;      /* Gray */
+            --syntax-number: #d19a66;       /* Orange */
 
             /* Typography */
             --font-ui: 'DM Sans', -apple-system, sans-serif;
@@ -462,15 +462,15 @@
         }
 
         .line-numbers {
-            background: var(--bg-panel);
+            background: #21252b; /* Atom One Dark Gutter */
             padding: 16px 12px;
             font-family: var(--font-mono);
             font-size: 13px;
             line-height: 1.7;
-            color: var(--text-muted);
+            color: #636d83; /* Atom One Dark Line Number */
             text-align: right;
             user-select: none;
-            border-right: 2px solid var(--border);
+            border-right: 2px solid #181a1f;
             min-width: 60px;
         }
 
@@ -491,7 +491,7 @@
             font-size: 13px;
             line-height: 1.7;
             color: transparent;
-            caret-color: var(--text-primary);
+            caret-color: #abb2bf; /* Atom One Dark Foreground */
             background: transparent;
             border: none;
             outline: none;
@@ -512,7 +512,7 @@
             font-family: var(--font-mono);
             font-size: 13px;
             line-height: 1.7;
-            color: var(--text-primary);
+            color: #abb2bf; /* Atom One Dark Foreground */
             background: var(--bg-editor);
             pointer-events: none;
             overflow-y: auto;
@@ -545,11 +545,11 @@
         }
 
         .syntax-highlight .operator {
-            color: var(--accent-cyan);
+            color: #56b6c2; /* Atom One Dark Cyan */
         }
 
         .syntax-highlight .module {
-            color: var(--accent-purple);
+            color: #e06c75; /* Atom One Dark Red */
             font-style: italic;
         }
 
@@ -559,16 +559,16 @@
         }
 
         .code-editor::-webkit-scrollbar-track {
-            background: var(--bg-panel);
+            background: #282c34; /* Match editor background */
         }
 
         .code-editor::-webkit-scrollbar-thumb {
-            background: var(--border);
+            background: #4b5263; /* Atom One Dark scrollbar */
             border-radius: 5px;
         }
 
         .code-editor::-webkit-scrollbar-thumb:hover {
-            background: var(--border-active);
+            background: #5c6370; /* Lighter on hover */
         }
 
         /* Terminal Output */
