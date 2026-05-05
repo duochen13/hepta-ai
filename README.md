@@ -1,6 +1,6 @@
 # DataVint
 
-**Data Quality Detection for Machine Learning**
+**Data Quality Detection & Optimization for Machine Learning**
 
 Automatically detect and fix data quality issues before training ML models.
 
@@ -8,6 +8,15 @@ Automatically detect and fix data quality issues before training ML models.
 
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Version](https://img.shields.io/badge/version-0.2.0-green.svg)](https://github.com/yourusername/datavint/releases)
+
+## 🎉 What's New in v0.2
+
+✨ **Manifest Generation & Application** - Automatically fix data quality issues!
+- Generate manifests from detected issues
+- Apply corrections: filter rows, reweight samples, impute missing values
+- Validate improvements with before/after metrics
+- See `notebooks/quickstart.ipynb` for examples
 
 ---
 
@@ -24,9 +33,14 @@ stats = dv.generate_statistics("train.csv", label_col="click")
 
 # 3. Detect quality issues (< 1 sec)
 issues = dv.detect_issues(stats)
-
-# 4. Display results
 dv.display_issues(issues)
+
+# 4. Generate manifest to fix issues (NEW in v0.2!)
+manifest = dv.generate_manifest(stats)
+
+# 5. Apply corrections
+corrected_df = manifest.apply("train.csv")
+# Returns: filtered rows + sample weights + imputed values
 ```
 
 **Output:**
@@ -88,7 +102,7 @@ model.fit(train_data)  # → AUC: 0.762
 dv.profile_dataset("train.csv")              # Quick overview
 stats = dv.generate_statistics("train.csv")  # Detailed analysis
 issues = dv.detect_issues(stats)             # Find problems
-manifest = dv.generate_manifest(issues)      # Generate fixes (v0.2)
+manifest = dv.generate_manifest(stats)       # Generate fixes ✨
 
 # Train on cleaned data
 cleaned_data = manifest.apply("train.csv")
@@ -101,7 +115,7 @@ model.fit(cleaned_data)  # → AUC: 0.824 (+6.2%)
 
 ## ✨ Features
 
-### Current (v0.1)
+### Current (v0.2)
 
 ✅ **Data Profiling** - Quick dataset overview (< 1 sec)
 - Shape, types, missing values, label distribution
@@ -121,19 +135,25 @@ model.fit(cleaned_data)  # → AUC: 0.824 (+6.2%)
 5. Train-test skew (distribution shifts)
 6. Class imbalance (extreme ratios)
 
-### Coming Soon (v0.2)
+✅ **Manifest Generation & Application** - Automatic data quality optimization (NEW!)
+- Generate manifests from detected issues
+- Apply corrections: row filtering, sample reweighting, feature imputation
+- Validate improvements with before/after metrics
+- Configurable thresholds via `dv.config`
 
-⏳ **Manifest Generation** - Automatic data cleaning
-- Sample weights + filter masks
-- Directional impact estimates (NE↓ AUC↑)
-- Human-in-the-loop approval workflow
+### Coming Soon (v0.3)
 
-⏳ **Additional Detectors** - Expand to 10 issue types
+⏳ **Additional Detectors** - Expand to 10+ issue types
 - Near-duplicates
 - Label noise
 - Temporal drift
 - Underrepresented segments
 - Feature-label correlation drops
+
+⏳ **Advanced Manifest Features**
+- Serialization (save/load JSON)
+- Custom correction strategies
+- What-if simulation mode
 
 ### Roadmap (v1.0+)
 
@@ -150,9 +170,10 @@ model.fit(cleaned_data)  # → AUC: 0.824 (+6.2%)
 |---------|------|------------|----------|-------------|
 | **Quick profiling** | ❌ | ❌ | ❌ | ✅ < 1 sec |
 | **Train-test skew** | ✅ | ✅ | ❌ | ✅ |
-| **Label errors** | ❌ | Partial | ✅ | ✅ (v0.2) |
-| **Actionable manifest** | ❌ | ❌ | ❌ | ✅ (v0.2) |
-| **What-if simulation** | ❌ | ❌ | ❌ | ✅ (v1.0) |
+| **Label errors** | ❌ | Partial | ✅ | ⏳ (v0.3) |
+| **Actionable manifest** | ❌ | ❌ | ❌ | ✅ **NEW!** |
+| **Auto-apply corrections** | ❌ | ❌ | ❌ | ✅ **NEW!** |
+| **What-if simulation** | ❌ | ❌ | ❌ | ⏳ (v1.0) |
 | **Framework** | TF-only | Any | Any | Any |
 | **Speed** | Slow | Medium | Slow | **Fast** |
 
@@ -256,6 +277,34 @@ issues = dv.detect_issues(stats)
 dv.display_issues(issues)
 ```
 
+### Example 4: Generate and Apply Manifest (v0.2)
+
+```python
+import pandas as pd
+import datavint as dv
+
+# Generate statistics from training data
+train_stats = dv.generate_statistics("train.csv", label_col="click")
+test_stats = dv.generate_statistics("test.csv", label_col="click")
+
+# Detect issues (train-test skew, missing values, etc.)
+issues = dv.detect_issues(train_stats, serving_statistics=test_stats)
+print(f"Found {len(issues)} issues")
+
+# Generate manifest to fix issues
+manifest = dv.generate_manifest(train_stats, serving_statistics=test_stats)
+print(f"Manifest: {manifest.row_mask.sum()} rows kept, {len(manifest.feature_fixes)} features fixed")
+
+# Apply manifest to training data
+train_df = pd.read_csv("train.csv")
+corrected_df = manifest.apply(train_df)
+
+# Verify improvements
+corrected_stats = dv.generate_statistics(corrected_df, label_col="click")
+corrected_issues = dv.detect_issues(corrected_stats, serving_statistics=test_stats)
+print(f"After correction: {len(corrected_issues)} issues (fixed {len(issues) - len(corrected_issues)})")
+```
+
 ---
 
 ## 🗂️ Project Structure
@@ -267,6 +316,8 @@ datavint/
 │   ├── profiling.py           # Data profiling
 │   ├── statistics.py          # Statistics generation
 │   ├── issues.py              # Issue detection orchestration
+│   ├── manifest.py            # Manifest generation & application (v0.2)
+│   ├── config.py              # Configuration & thresholds
 │   ├── types.py               # Dataclasses
 │   └── detectors/             # 6 issue detectors
 │       ├── missing_values.py
