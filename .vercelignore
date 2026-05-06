@@ -43,8 +43,8 @@ tests/
 datavint/
 heptaai/
 
-# Server (not needed for landing page)
+# Server (backend will deploy separately to Railway)
 server/
 
-# Client (not needed for landing page)
-client/
+# Build output (generated during build)
+dist/
