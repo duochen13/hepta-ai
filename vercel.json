@@ -1,4 +1,5 @@
 {
+  "installCommand": "echo 'Skipping Python dependencies - this is a frontend-only deployment'",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "headers": [
