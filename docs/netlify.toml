@@ -1,0 +1,8 @@
+# Netlify Configuration
+# This redirects deft-shortbread-9762ec.netlify.app -> www.datavint.io
+
+[[redirects]]
+  from = "/*"
+  to = "https://www.datavint.io/:splat"
+  status = 301
+  force = true
