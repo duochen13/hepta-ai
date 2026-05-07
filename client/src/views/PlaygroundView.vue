@@ -4,6 +4,9 @@ import api from '@/services/api'
 import ChatPanel from '@/components/ChatPanel.vue'
 import CodeEditor from '@/components/CodeEditor.vue'
 import Terminal from '@/components/Terminal.vue'
+import CodePlayground from '@/components/CodePlayground.vue'
+
+const activeTab = ref('code-playground')
 
 const code = ref('')
 
@@ -13,6 +16,10 @@ const terminalOutput = ref([
 ])
 
 const isRunning = ref(false)
+
+function switchTab(tab) {
+  activeTab.value = tab
+}
 
 async function runCode() {
   isRunning.value = true
@@ -101,30 +108,54 @@ function handleMessage(message) {
 
       <!-- IDE (Right - 75%) -->
       <div class="right-panel">
-        <!-- Toolbar -->
-        <div class="toolbar">
-          <div class="file-tabs">
-            <div class="file-tab active">analysis.py</div>
-          </div>
-          <div class="actions">
-            <button class="btn secondary" @click="clearCode">
-              🗑 Clear
-            </button>
-            <button class="btn primary" @click="runCode" :disabled="isRunning">
-              {{ isRunning ? '⏳ Running...' : '▶ Run Code' }}
-            </button>
-          </div>
+        <!-- Tab Switcher -->
+        <div class="tab-bar">
+          <button
+            class="tab-button"
+            :class="{ active: activeTab === 'custom-code' }"
+            @click="switchTab('custom-code')"
+          >
+            Custom Code
+          </button>
+          <button
+            class="tab-button"
+            :class="{ active: activeTab === 'code-playground' }"
+            @click="switchTab('code-playground')"
+          >
+            Code Playground
+          </button>
         </div>
 
-        <!-- Code Editor -->
-        <CodeEditor v-model="code" />
+        <!-- Custom Code Tab -->
+        <template v-if="activeTab === 'custom-code'">
+          <!-- Toolbar -->
+          <div class="toolbar">
+            <div class="file-tabs">
+              <div class="file-tab active">analysis.py</div>
+            </div>
+            <div class="actions">
+              <button class="btn secondary" @click="clearCode">
+                🗑 Clear
+              </button>
+              <button class="btn primary" @click="runCode" :disabled="isRunning">
+                {{ isRunning ? '⏳ Running...' : '▶ Run Code' }}
+              </button>
+            </div>
+          </div>
 
-        <!-- Terminal Output -->
-        <Terminal
-          :output="terminalOutput"
-          :running="isRunning"
-          @clear="clearTerminal"
-        />
+          <!-- Code Editor -->
+          <CodeEditor v-model="code" />
+
+          <!-- Terminal Output -->
+          <Terminal
+            :output="terminalOutput"
+            :running="isRunning"
+            @clear="clearTerminal"
+          />
+        </template>
+
+        <!-- Code Playground Tab -->
+        <CodePlayground v-else-if="activeTab === 'code-playground'" />
       </div>
     </div>
   </div>
@@ -153,6 +184,38 @@ function handleMessage(message) {
   flex: 1;
   display: flex;
   flex-direction: column;
+}
+
+/* Tab Bar */
+.tab-bar {
+  display: flex;
+  gap: 0;
+  background: var(--bg-panel);
+  border-bottom: 2px solid var(--border);
+  padding: 0 16px;
+}
+
+.tab-button {
+  padding: 12px 24px;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-button:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.tab-button.active {
+  color: var(--accent-cyan);
+  border-bottom-color: var(--accent-cyan);
+  background: var(--bg-dark);
 }
 
 /* Toolbar */

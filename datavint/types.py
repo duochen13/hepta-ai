@@ -234,3 +234,17 @@ class Issue:
             f"   {self.description}\n"
             f"   Direction: {direction_str}  Severity: {self.severity.value.upper()}"
         )
+
+    def to_dict(self) -> dict:
+        """Convert Issue to dictionary for JSON serialization."""
+        return {
+            'type': self.type.value,
+            'severity': self.severity.value.upper(),
+            'feature': self.feature,
+            'metric_value': self.metric_value,
+            'threshold': self.threshold,
+            'ne_direction': self.ne_direction,
+            'auc_direction': self.auc_direction,
+            'description': self.description,
+            'affected_samples': self.affected_samples
+        }
