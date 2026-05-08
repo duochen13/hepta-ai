@@ -206,7 +206,7 @@ async def execute_template(request: ExecuteTemplateRequest, http_request: Reques
         logger.error(f"Dataset file not found: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"Dataset file not found: {template['dataset']}. Please ensure demo datasets are available."
+            detail=str(e)  # Include detailed error message from datavint
         )
 
     except Exception as e:
