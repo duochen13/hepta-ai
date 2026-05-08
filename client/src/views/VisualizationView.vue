@@ -110,7 +110,7 @@ onMounted(() => {
           </div>
         </div>
         <div class="threshold-info">
-          <details>
+          <details open>
             <summary>View severity thresholds</summary>
             <ul>
               <li><strong>Missing Values:</strong> HIGH (&gt;60%), MEDIUM (&gt;30%)</li>

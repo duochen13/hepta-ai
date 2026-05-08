@@ -11,6 +11,7 @@ const previewData = ref(null)
 const isLoading = ref(false)
 const error = ref(null)
 const successMessage = ref(null)
+const datasetUrl = ref('')
 
 async function handleFileUpload(event) {
   const file = event.target.files[0]
@@ -31,6 +32,42 @@ async function handleFileUpload(event) {
     successMessage.value = 'Upload successful! Go to Visualization tab to see data quality analysis.'
   } catch (err) {
     error.value = err.message
+  } finally {
+    isLoading.value = false
+  }
+}
+
+async function handleUrlLoad() {
+  if (!datasetUrl.value.trim()) {
+    error.value = 'Please enter a valid URL'
+    return
+  }
+
+  isLoading.value = true
+  error.value = null
+  successMessage.value = null
+
+  try {
+    // Fetch the CSV from the URL
+    const response = await fetch(datasetUrl.value)
+    if (!response.ok) {
+      throw new Error('Failed to fetch dataset from URL')
+    }
+
+    const blob = await response.blob()
+    const file = new File([blob], 'dataset.csv', { type: 'text/csv' })
+
+    // Upload the file using existing upload API
+    const uploadResponse = await api.data.upload(file)
+    datasetId.value = uploadResponse.data.dataset_id
+    previewData.value = uploadResponse.data.preview
+
+    // Store dataset_id in localStorage for visualization tab
+    localStorage.setItem('currentDatasetId', uploadResponse.data.dataset_id)
+
+    successMessage.value = 'Dataset loaded successfully! Go to Visualization tab to see data quality analysis.'
+  } catch (err) {
+    error.value = err.message || 'Failed to load dataset from URL'
   } finally {
     isLoading.value = false
   }
@@ -58,7 +95,25 @@ function goToVisualization() {
           />
           Choose File
         </label>
-        <div v-if="isLoading" class="loading">Uploading...</div>
+
+        <!-- URL Input Section -->
+        <div class="url-section">
+          <div class="divider">
+            <span>or</span>
+          </div>
+          <input
+            v-model="datasetUrl"
+            type="text"
+            class="url-input"
+            placeholder="Enter dataset URL (CSV)"
+            @keypress.enter="handleUrlLoad"
+          />
+          <button class="url-btn" @click="handleUrlLoad" :disabled="isLoading">
+            Load from URL
+          </button>
+        </div>
+
+        <div v-if="isLoading" class="loading">Loading...</div>
         <div v-if="error" class="error">{{ error }}</div>
         <div v-if="successMessage" class="success">
           {{ successMessage }}
@@ -151,6 +206,85 @@ function goToVisualization() {
   background: #0051d5;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+}
+
+.url-section {
+  margin-top: 32px;
+  padding-top: 28px;
+}
+
+.divider {
+  position: relative;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--border);
+}
+
+.divider span {
+  position: relative;
+  background: var(--bg-panel);
+  padding: 0 16px;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.url-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--bg-dark);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: var(--font-ui);
+  transition: all 0.2s ease;
+  margin-bottom: 12px;
+}
+
+.url-input:focus {
+  outline: none;
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.url-input::placeholder {
+  color: var(--text-muted);
+}
+
+.url-btn {
+  width: 100%;
+  padding: 11px 28px;
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.url-btn:hover:not(:disabled) {
+  background: var(--accent-cyan);
+  border-color: var(--accent-cyan);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.url-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .loading {

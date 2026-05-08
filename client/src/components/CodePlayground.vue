@@ -122,7 +122,7 @@ function selectTemplate(template) {
         v-if="selectedTemplate"
         height="400px"
         language="python"
-        theme="vs-light"
+        theme="vs-dark"
         :value="selectedTemplate.code"
         :options="{
           readOnly: true,
@@ -221,7 +221,7 @@ function selectTemplate(template) {
   gap: 16px;
   height: 100%;
   padding: 20px;
-  background: #f5f5f7;
+  background: var(--bg-dark);
 }
 
 .playground-header {
@@ -229,9 +229,9 @@ function selectTemplate(template) {
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  background: white;
+  background: var(--bg-panel);
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 2px solid var(--border);
 }
 
 .template-selector {
@@ -242,59 +242,67 @@ function selectTemplate(template) {
 
 .template-selector label {
   font-weight: 600;
-  color: #1d1d1f;
+  color: var(--text-primary);
 }
 
 .template-selector select {
   padding: 8px 12px;
-  border: 1px solid #d2d2d7;
+  border: 2px solid var(--border);
   border-radius: 6px;
   font-size: 14px;
-  background: white;
+  background: var(--bg-dark);
+  color: var(--text-primary);
   cursor: pointer;
+  transition: all 0.2s;
+}
+
+.template-selector select:hover {
+  border-color: var(--accent-cyan);
 }
 
 .run-button {
   padding: 10px 24px;
-  background: #007aff;
+  background: var(--accent-cyan);
   color: white;
   border: none;
   border-radius: 6px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s;
 }
 
 .run-button:hover:not(:disabled) {
-  background: #0051d5;
+  background: var(--accent-lime);
+  transform: translateY(-2px);
 }
 
 .run-button:disabled {
-  background: #d2d2d7;
+  background: var(--bg-hover);
+  color: var(--text-muted);
   cursor: not-allowed;
 }
 
 .template-description {
   padding: 12px 16px;
-  background: #fff3cd;
-  border-left: 4px solid #ffc107;
+  background: rgba(99, 102, 241, 0.1);
+  border-left: 4px solid var(--accent-cyan);
   border-radius: 4px;
-  color: #856404;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
 .editor-section {
-  background: white;
+  background: var(--bg-panel);
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 2px solid var(--border);
 }
 
 .loading {
   padding: 40px;
   text-align: center;
-  color: #86868b;
+  color: var(--text-muted);
 }
 
 .execution-status {
@@ -329,15 +337,15 @@ function selectTemplate(template) {
 }
 
 .results-section {
-  background: white;
+  background: var(--bg-panel);
   border-radius: 8px;
   padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 2px solid var(--border);
 }
 
 .results-section h3 {
   margin: 0 0 16px 0;
-  color: #1d1d1f;
+  color: var(--text-primary);
 }
 
 .results-summary {
@@ -349,25 +357,28 @@ function selectTemplate(template) {
 
 .stat-card {
   padding: 16px;
-  background: #f5f5f7;
+  background: var(--bg-hover);
   border-radius: 8px;
   text-align: center;
+  border: 2px solid var(--border);
 }
 
 .stat-label {
   font-size: 12px;
-  color: #86868b;
+  color: var(--text-muted);
   margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .stat-value {
   font-size: 32px;
   font-weight: 700;
-  color: #1d1d1f;
+  color: var(--text-primary);
 }
 
 .stat-value.error-count {
-  color: #f44336;
+  color: var(--accent-orange);
 }
 
 .issues-breakdown {
@@ -376,7 +387,7 @@ function selectTemplate(template) {
 
 .issues-breakdown h4 {
   margin: 0 0 12px 0;
-  color: #1d1d1f;
+  color: var(--text-primary);
   font-size: 16px;
 }
 
@@ -394,28 +405,32 @@ function selectTemplate(template) {
 }
 
 .severity-item.critical {
-  background: #ffebee;
-  color: #c62828;
+  background: rgba(220, 38, 38, 0.2);
+  color: var(--accent-orange);
+  border: 2px solid var(--accent-orange);
 }
 
 .severity-item.high {
-  background: #fff3e0;
-  color: #e65100;
+  background: rgba(255, 152, 0, 0.2);
+  color: #ff9800;
+  border: 2px solid #ff9800;
 }
 
 .severity-item.medium {
-  background: #fff9c4;
-  color: #f57f17;
+  background: rgba(255, 193, 7, 0.2);
+  color: #ffc107;
+  border: 2px solid #ffc107;
 }
 
 .severity-item.low {
-  background: #e3f2fd;
-  color: #1565c0;
+  background: rgba(99, 102, 241, 0.2);
+  color: var(--accent-cyan);
+  border: 2px solid var(--accent-cyan);
 }
 
 .issues-details h4 {
   margin: 0 0 12px 0;
-  color: #1d1d1f;
+  color: var(--text-primary);
   font-size: 16px;
 }
 
@@ -427,14 +442,15 @@ function selectTemplate(template) {
 
 .issue-card {
   padding: 12px;
-  background: #f5f5f7;
+  background: var(--bg-hover);
   border-radius: 6px;
-  border-left: 4px solid #d2d2d7;
+  border: 2px solid var(--border);
+  border-left-width: 4px;
 }
 
 .issue-card .severity-item.critical,
 .issue-card.critical {
-  border-left-color: #f44336;
+  border-left-color: var(--accent-orange);
 }
 
 .issue-card .severity-item.high,
@@ -449,7 +465,7 @@ function selectTemplate(template) {
 
 .issue-card .severity-item.low,
 .issue-card.low {
-  border-left-color: #2196f3;
+  border-left-color: var(--accent-cyan);
 }
 
 .issue-header {
@@ -467,48 +483,52 @@ function selectTemplate(template) {
 }
 
 .issue-severity.critical {
-  background: #ffebee;
-  color: #c62828;
+  background: rgba(220, 38, 38, 0.2);
+  color: var(--accent-orange);
+  border: 1px solid var(--accent-orange);
 }
 
 .issue-severity.high {
-  background: #fff3e0;
-  color: #e65100;
+  background: rgba(255, 152, 0, 0.2);
+  color: #ff9800;
+  border: 1px solid #ff9800;
 }
 
 .issue-severity.medium {
-  background: #fff9c4;
-  color: #f57f17;
+  background: rgba(255, 193, 7, 0.2);
+  color: #ffc107;
+  border: 1px solid #ffc107;
 }
 
 .issue-severity.low {
-  background: #e3f2fd;
-  color: #1565c0;
+  background: rgba(99, 102, 241, 0.2);
+  color: var(--accent-cyan);
+  border: 1px solid var(--accent-cyan);
 }
 
 .issue-type {
-  color: #86868b;
+  color: var(--text-muted);
   font-size: 12px;
 }
 
 .issue-description {
-  color: #1d1d1f;
+  color: var(--text-primary);
   font-size: 14px;
 }
 
 .more-issues {
   padding: 12px;
   text-align: center;
-  color: #86868b;
+  color: var(--text-muted);
   font-style: italic;
 }
 
 .success-message {
   padding: 16px;
-  background: #e8f5e9;
-  border-left: 4px solid #4caf50;
+  background: rgba(16, 185, 129, 0.2);
+  border-left: 4px solid var(--accent-lime);
   border-radius: 4px;
-  color: #2e7d32;
+  color: var(--accent-lime);
   font-size: 16px;
 }
 </style>
