@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "datavint"
+version = "0.2.0"
+description = "Recommendation Systems Data Quality SDK"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "DataVint Team"}
+]
+keywords = ["data-quality", "recommendation-systems", "machine-learning", "data-validation"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+
+dependencies = [
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=3.0.0",
+    "mypy>=0.950",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["datavint*"]
+exclude = ["tests*", "server*", "client*", "docs*", "examples*", "notebooks*", "validation*", "wiki*"]
