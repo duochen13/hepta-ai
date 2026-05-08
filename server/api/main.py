@@ -51,6 +51,7 @@ async def root():
     return {
         "service": "DataVint API",
         "version": "0.2.0",
+        "build": "af7543e-debug",  # Git commit hash for deployment verification
         "status": "healthy",
         "docs": "/api/docs"
     }
