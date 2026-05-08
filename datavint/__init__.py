@@ -74,7 +74,21 @@ def load_demo_dataset(name: str) -> pd.DataFrame:
 
     # Get absolute path relative to project root
     project_root = Path(__file__).parent.parent
-    dataset_path = project_root / DEMO_DATASETS[name]
+    dataset_relative_path = DEMO_DATASETS[name]
+
+    # Try multiple possible locations for datasets
+    # 1. Standard location: project_root/raw_data/...
+    dataset_path = project_root / dataset_relative_path
+
+    # 2. Railway deployment: server/raw_data/... (when Railway root is /server)
+    #    In Railway, cwd might be /app/server, so check ../server/raw_data
+    if not dataset_path.exists():
+        import os
+        cwd = Path(os.getcwd())
+        # If we're in /app/server, datasets are at /app/server/raw_data
+        alt_path = cwd / dataset_relative_path
+        if alt_path.exists():
+            dataset_path = alt_path
 
     if not dataset_path.exists():
         raise FileNotFoundError(f"Dataset file not found: {dataset_path}")
