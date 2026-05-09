@@ -218,11 +218,12 @@ function handleInput() {
           ref="textarea"
           v-model="input"
           class="chat-input"
-          :placeholder="uploadedFile ? 'Ask about your dataset...' : 'Ask about data quality...'"
+          :placeholder="uploadedFile ? 'Ask about your dataset...' : 'Ask me about check missing value, duplication rate etc'"
           rows="1"
           @keypress="handleKeypress"
           @input="handleInput"
           :disabled="isAnalyzing"
+          autofocus
         ></textarea>
         <button class="send-button" @click="sendMessage" :disabled="isAnalyzing">
           {{ isAnalyzing ? '⏳' : '➤' }}
@@ -413,7 +414,7 @@ function handleInput() {
 .message.assistant .message-content {
   background: linear-gradient(135deg, rgba(0, 240, 255, 0.08), rgba(164, 255, 0, 0.08));
   color: var(--text-primary);
-  border: 2px solid var(--border-active);
+  border: 2px solid var(--border);
 }
 
 .chat-input-container {
@@ -483,6 +484,24 @@ function handleInput() {
   outline: none;
   border-color: var(--accent-cyan);
   box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.1);
+}
+
+.chat-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Animated caret for better focus visibility */
+.chat-input:focus {
+  caret-color: var(--accent-cyan);
+}
+
+@keyframes blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  50.01%, 100% {
+    opacity: 0;
+  }
 }
 
 .send-button {
