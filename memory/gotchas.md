@@ -151,14 +151,35 @@ stats, issues = dv.profile(df)
 
 ## NumPy Boolean Subtract Error
 
-**Fixed**: 2026-05-09 (skill_executor.py)
+**Fixed**: 2026-05-09 (skill_executor.py + datavint/statistics.py)
 
 **Error Message**: `numpy boolean subtract, the '-' operator, is not supported, use the bitwise_xor, the '^' operator, or the logical_xor function instead.`
 
-**Root Cause**:
-- NumPy 2.0+ deprecated boolean subtraction (`bool_val - 1`)
-- Calculating missing rate as `1 - completeness` where `completeness` is a NumPy boolean
-- Error occurs when `feat_stats.completeness` is a NumPy boolean/array instead of float
+**Root Causes:**
+
+### 1. Boolean Column Quantile Calculation (PRIMARY FIX)
+NumPy 2.0+ cannot calculate quantiles (p25, p50, p75) for boolean dtype columns. When `vint.profile(df)` processes a dataset with boolean columns (e.g., `is_active: bool`), the error occurs during `series.quantile()` calls.
+
+**Fix in `datavint/statistics.py:204`**:
+```python
+# ❌ BAD - boolean dtypes incorrectly treated as numeric
+if pd.api.types.is_numeric_dtype(s):
+    # This fails for boolean columns
+    p25=float(s_clean.quantile(0.25))
+
+# ✅ GOOD - check boolean dtype first
+if pd.api.types.is_bool_dtype(s):
+    # Boolean feature - treat as categorical
+    # Boolean dtypes can't have quantiles calculated on them in NumPy 2.0+
+    top_vals = s_clean.value_counts(normalize=True).head(10).to_dict()
+    return FeatureStats(type="categorical", ...)
+elif pd.api.types.is_numeric_dtype(s):
+    # Now safe to calculate quantiles
+    p25=float(s_clean.quantile(0.25))
+```
+
+### 2. Arithmetic on NumPy Arrays
+In `skill_executor.py`, calculating `missing_rate = 1 - completeness` where `completeness` is a NumPy boolean/array triggers this error.
 
 **Fix**:
 ```python
@@ -171,9 +192,9 @@ missing_rate = 1.0 - completeness_val
 ```
 
 **Where to apply**:
-- Any arithmetic operations on values that might be NumPy booleans
-- Always convert to Python `float()` before math operations
-- Applied in: `skill_executor.py` completeness calculations
+- Always check for boolean dtype before calculating quantiles
+- Convert NumPy values to Python `float()` before arithmetic operations
+- Applied in: `datavint/statistics.py` (primary), `skill_executor.py` (defensive)
 
 ## Hybrid Routing Implementation (2026-05-09)
 

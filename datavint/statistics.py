@@ -201,7 +201,26 @@ def _compute_feature_stats(df: pd.DataFrame, col: str, n_rows: int) -> FeatureSt
         feature_entropy = 0.0
 
     # Type-specific stats
-    if pd.api.types.is_numeric_dtype(s):
+    if pd.api.types.is_bool_dtype(s):
+        # Boolean feature - treat as categorical
+        # Boolean dtypes can't have quantiles calculated on them in NumPy 2.0+
+        top_vals = s_clean.value_counts(normalize=True).head(10).to_dict() if len(s_clean) > 0 else {}
+
+        return FeatureStats(
+            name=col,
+            type="categorical",
+            count=count,
+            null_count=null_count,
+            null_rate=null_rate,
+            distinct_count=distinct_count,
+            distinctness=distinctness,
+            uniqueness=uniqueness,
+            unique_value_ratio=unique_value_ratio,
+            completeness=completeness,
+            entropy=feature_entropy,
+            top_values={str(k): float(v) for k, v in top_vals.items()},
+        )
+    elif pd.api.types.is_numeric_dtype(s):
         # Numeric feature
         if len(s_clean) > 0:
             # Store histogram for skew detection (adaptive bin count)
