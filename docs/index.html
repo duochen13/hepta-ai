@@ -47,7 +47,7 @@
         <p class="hero-subline">Like a compiler optimizes code without changing what it does, we optimize your dataset without changing your model. This is not a tool—it's a system that improves with usage.</p>
         <div class="hero-ctas">
             <button class="btn-primary" onclick="window.location.href='/playground'">Get Started Free</button>
-            <button class="btn-secondary" onclick="window.location.href='/playground'">Book a Demo</button>
+            <button class="btn-secondary" onclick="openDemoModal()">Book a Demo</button>
         </div>
     </section>
 
@@ -325,7 +325,7 @@
         <p class="cta-subline">Join data teams using DataVint to detect issues, prove ROI, and deploy with confidence</p>
         <div class="cta-buttons">
             <button class="btn-cta-primary" onclick="window.location.href='/playground'">Get Started Free</button>
-            <button class="btn-cta-secondary" onclick="window.location.href='/playground'">Book a Demo</button>
+            <button class="btn-cta-secondary" onclick="openDemoModal()">Book a Demo</button>
         </div>
     </section>
 
@@ -353,7 +353,73 @@
         </div>
     </footer>
 
+    <!-- Demo Request Modal -->
+    <div id="demoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Book a Demo</h2>
+                <button class="modal-close" onclick="closeDemoModal()">&times;</button>
+            </div>
+            <form id="demoForm" class="modal-form" onsubmit="handleDemoSubmit(event)">
+                <div class="form-group">
+                    <label for="firstName">First Name *</label>
+                    <input type="text" id="firstName" name="firstName" required placeholder="John" />
+                </div>
+                <div class="form-group">
+                    <label for="lastName">Last Name *</label>
+                    <input type="text" id="lastName" name="lastName" required placeholder="Doe" />
+                </div>
+                <div class="form-group">
+                    <label for="email">Email Address *</label>
+                    <input type="email" id="email" name="email" required placeholder="john.doe@company.com" />
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" onclick="closeDemoModal()">Cancel</button>
+                    <button type="submit" class="btn-submit">Submit Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Particle Network Animation -->
     <script src="particles.js"></script>
+
+    <!-- Demo Modal Script -->
+    <script>
+        function openDemoModal() {
+            document.getElementById('demoModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDemoModal() {
+            document.getElementById('demoModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+            document.getElementById('demoForm').reset();
+        }
+
+        function handleDemoSubmit(event) {
+            event.preventDefault();
+            const formData = {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                email: document.getElementById('email').value
+            };
+
+            // TODO: Send to backend API
+            console.log('Demo request:', formData);
+
+            // Show success message
+            alert('Thank you! We\'ll contact you soon to schedule your demo.');
+            closeDemoModal();
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('demoModal');
+            if (event.target === modal) {
+                closeDemoModal();
+            }
+        }
+    </script>
 </body>
 </html>
