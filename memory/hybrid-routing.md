@@ -247,7 +247,7 @@ RECOMMENDATIONS
 
 ## Testing
 
-Run the test suite:
+### Unit Tests (no server required)
 
 ```bash
 python3 tests/api/test_skill_simple.py        # Test individual skill execution
@@ -261,6 +261,34 @@ python3 tests/api/test_profile_missing_values.py  # Test vint.profile() compatib
 ✅ 70% cost reduction
 ✅ 67.7% latency reduction
 ✅ 3.1x overall speedup
+```
+
+### E2E Integration Test (requires running server)
+
+Tests the full chatbox flow: CSV upload → routing → DataVint SDK → response
+
+```bash
+# Terminal 1: Start backend server
+uvicorn server.api.main:app --reload
+
+# Terminal 2: Run E2E test
+python3 tests/api/test_e2e_chatbox.py
+```
+
+**Test Coverage:**
+- ✅ Skill routing query ("check missing values")
+- ✅ LLM routing query ("visualize correlation matrix")
+- ✅ Slash command ("/check-completeness")
+- ✅ Metrics endpoint (/api/chat/metrics)
+
+**Expected Output:**
+```
+✅ Server is running!
+✅ TEST 1 PASSED - Skill Routing
+✅ TEST 2 PASSED - LLM Routing
+✅ TEST 3 PASSED - Slash Command
+✅ TEST 4 PASSED - Metrics Endpoint
+✅ ALL TESTS PASSED (4/4)
 ```
 
 ## Adding New Skills
