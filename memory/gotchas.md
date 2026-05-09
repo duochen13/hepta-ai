@@ -80,3 +80,26 @@ User chatbox → /server/api/routes/chat.py
 ```
 
 All routes import `datavint` as a library dependency. No duplicate implementations.
+
+## Common API Errors & Fixes
+
+### "Issue object is not subscriptable" Error
+
+**Fixed**: 2026-05-08 (commit 5c169b0)
+
+**Error Message**: `'Issue' object is not subscriptable`
+
+**Root Cause**:
+- `Issue` is a dataclass that only supports attribute access (`issue.type`)
+- Frontend expects dictionaries that support bracket notation (`issue['type']`)
+- LLM-generated code calls `vint.profile(df)` without `return_dict=True`
+- Raw Issue objects were being returned in JSON API responses
+
+**Fix**:
+- Convert Issue objects to dictionaries using `issue.to_dict()` in chat.py
+- Convert DatasetStatistics objects using `stats.to_dict()` in chat.py
+- Added serialization logic at lines 203-221 in server/api/routes/chat.py
+
+**Prevention**:
+- Always use `vint.profile(df, return_dict=True)` in API endpoints
+- Or manually serialize Issue objects before JSON response
