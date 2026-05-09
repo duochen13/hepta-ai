@@ -3,6 +3,7 @@
 > **Location:** `docs/features/data-profiling.md`
 > **Feature Owner:** Duo Chen
 > **Created:** 2026-05-02
+> **Last Updated:** 2026-05-08 (v0.2 - Enriched Detectors)
 > **Status:** ✅ Complete, ready for review
 
 ---
@@ -378,6 +379,101 @@ Files changed:
 - docs/PROFILING.md (new)
 - examples/demo_profiling.py (new)
 ```
+
+---
+
+## 🆕 v0.2 Update: Enriched Statistical Detectors (2026-05-08)
+
+### New Detectors Added
+
+DataVint v0.2 adds **6 new enriched statistical detectors** inspired by Amazon Deequ and Great Expectations:
+
+1. **ClassImbalanceDetector** - Label distribution analysis
+   - Requires `label_col` parameter in `vint.profile()`
+   - Detects extreme class ratios (<30% positive class = HIGH)
+   - Auto-detects label columns by common names
+
+2. **CompletenessDetector** - Missing value analysis
+   - Metric: `completeness = 1 - null_rate`
+   - Thresholds: <50% = HIGH, <80% = MEDIUM
+
+3. **CardinalityDetector** - High cardinality detection
+   - Identifies potential ID columns (>90% unique values)
+   - Categories: ID-LIKE, HIGH, MEDIUM, LOW cardinality
+
+4. **EntropyDetector** - Information content analysis
+   - Shannon entropy in nats: `-Σ(p_i * log(p_i))`
+   - Detects near-constant features (low entropy)
+   - Flags potential noise (high entropy)
+
+5. **UniquenessDetector** - Duplicate value detection
+   - Metric: `uniqueness = unique_count / total_count`
+   - Detects features with many repeated values
+
+6. **DistinctnessDetector** - Distinct value analysis
+   - Metric: `distinctness = distinct_count / total_count`
+   - Identifies features with very few categories
+
+### Integration Points
+
+**1. Python API Enhancement:**
+```python
+import datavint as vint
+
+# Now supports label_col for class imbalance detection
+stats, issues = vint.profile(df, label_col='target')
+
+# All 11 detectors run automatically (6 new + 5 existing)
+```
+
+**2. Chatbox Integration:**
+- Natural language queries trigger appropriate detectors
+- Examples: "what's the imbalance rate?", "check completeness", "find ID columns"
+- LLM generates code that filters issues by detector type
+
+**3. Claude Code Skills:**
+Created 6 new skills in `.claude/skills/`:
+- `/check-imbalance` - Class imbalance analysis
+- `/check-completeness` - Missing values analysis
+- `/check-cardinality` - High cardinality detection
+- `/check-entropy` - Information content analysis
+- `/check-uniqueness` - Duplicate values analysis
+- `/check-distinctness` - Distinct values analysis
+
+Each skill provides rich formatted output with visual bars, severity icons, and actionable recommendations.
+
+**4. Skill Routing:**
+Added automatic routing in `CLAUDE.md` to invoke skills based on natural language queries.
+
+### Files Modified/Created
+
+**Core Implementation:**
+- `datavint/detectors/completeness.py` - NEW
+- `datavint/detectors/distinctness.py` - NEW
+- `datavint/detectors/uniqueness.py` - NEW
+- `datavint/detectors/entropy.py` - NEW
+- `datavint/detectors/cardinality.py` - NEW
+- `datavint/__init__.py` - MODIFIED (added `label_col` parameter)
+
+**Integration:**
+- `server/api/services/llm_client.py` - MODIFIED (updated LLM prompt)
+- `.claude/skills/check-*.md` - NEW (6 Claude skills)
+- `CLAUDE.md` - MODIFIED (added skill routing)
+
+### Statistics
+
+- **Total Detectors:** 11 (6 new + 5 existing)
+- **Claude Skills:** 6 new skills for interactive analysis
+- **Test Coverage:** Comprehensive testing with synthetic datasets
+- **Performance:** Two-phase architecture maintained (compute once, detect multiple)
+
+### Deferred to v0.3
+
+- Multi-column metrics (MutualInformation, Correlation)
+- Probabilistic algorithms (ApproxCountDistinct, ApproxQuantiles)
+- Constraint-based metrics (Compliance, PatternMatch)
+
+---
 
 ## ✅ Ready to Ship
 

@@ -3,21 +3,29 @@
 Complete API reference for detecting and displaying data quality issues.
 
 > **Location:** `docs/api/detectors.md`
-> **Version:** v0.1
-> **Last updated:** 2026-05-02
+> **Version:** v0.2
+> **Last updated:** 2026-05-08
 
 ---
 
 ## Overview
 
-DataVint provides automated detection of 6 types of data quality issues that can degrade ML model performance:
+DataVint provides automated detection of **11 types** of data quality issues that can degrade ML model performance:
 
+### Existing Detectors (v0.1)
 1. **Missing Values** - Features with high null rates
 2. **Duplicates** - Exact duplicate rows in the dataset
 3. **Schema Violations** - Type mismatches or unexpected categorical values
 4. **Numeric Range Violations** - Test values outside training min/max range
 5. **Train-Test Skew** - Distribution shifts between train and test
-6. **Class Imbalance** - Extreme label class ratios
+
+### New Enriched Detectors (v0.2)
+6. **Class Imbalance** - Extreme label class distribution (requires `label_col`)
+7. **Completeness** - Features with low completeness (high missing rates)
+8. **Cardinality** - High cardinality categorical features (potential ID columns)
+9. **Entropy** - Low/high information content features
+10. **Uniqueness** - Features with many duplicate values
+11. **Distinctness** - Features with few distinct values
 
 ---
 
@@ -348,6 +356,130 @@ dv.display_issues(high_only)
 
 ---
 
+### 7. Completeness (v0.2)
+
+**Type:** `low_completeness`
+**Detects:** Features with low completeness (high missing rates)
+
+**When triggered:**
+- HIGH: < 50% completeness
+- MEDIUM: 50-80% completeness
+
+**Example:**
+```
+🟡 [low_completeness] user_profile
+   Only 66.6% of values are present (33.4% missing)
+   Severity: MEDIUM
+```
+
+**What this means:**
+- 33.4% of rows have null values in `user_profile`
+- Feature provides incomplete information for model training
+- **Action:** Consider imputation or feature engineering with missing indicators
+
+---
+
+### 8. Cardinality (v0.2)
+
+**Type:** `high_cardinality`
+**Detects:** Categorical features with very high cardinality (likely ID columns)
+
+**When triggered:**
+- HIGH: > 90% unique values
+- LOW: < 10% distinctness (very few categories)
+
+**Example:**
+```
+🔴 [high_cardinality] user_id
+   100.0% of values are unique (potential ID column)
+   Cardinality: 100.0% (threshold: 90.0%)
+   Severity: HIGH
+```
+
+**What this means:**
+- Every row has a unique `user_id` value
+- This is likely an identifier, not a predictive feature
+- **Action:** Drop ID columns or use target encoding/embeddings if meaningful
+
+**Categories:**
+- **ID-LIKE** (>90%): Likely identifier, consider dropping
+- **HIGH** (50-90%): Needs advanced encoding (target encoding, embeddings)
+- **MEDIUM** (20-50%): Standard encoding works
+- **LOW** (<20%): Few categories, one-hot encoding recommended
+
+---
+
+### 9. Entropy (v0.2)
+
+**Type:** `low_entropy` or `high_entropy`
+**Detects:** Features with abnormal information content
+
+**When triggered:**
+- LOW: Entropy < 0.5 nats (near-constant features)
+- HIGH: Entropy > 4.0 nats (potential noise)
+
+**Example:**
+```
+🟡 [low_entropy] status_flag
+   Entropy: 0.056 nats (near-constant feature, low information)
+   Severity: MEDIUM
+```
+
+**What this means:**
+- Feature has very little variation (almost constant)
+- Provides minimal information for prediction
+- **Action:** Consider dropping if entropy < 0.1 nats
+
+**Formula:** Shannon entropy in nats: `-Σ(p_i * log(p_i))`
+
+---
+
+### 10. Uniqueness (v0.2)
+
+**Type:** `low_uniqueness`
+**Detects:** Features where most values appear multiple times
+
+**When triggered:**
+- HIGH: < 10% uniqueness
+
+**Example:**
+```
+🔴 [low_uniqueness] product_category
+   Only 5% of values are unique (many duplicates)
+   Severity: HIGH
+```
+
+**What this means:**
+- 95% of values appear multiple times (only 5% appear exactly once)
+- Feature has many repeated patterns
+- **Action:** Validate if this is expected domain behavior
+
+**Note:** Uniqueness = fraction of values appearing exactly once
+
+---
+
+### 11. Distinctness (v0.2)
+
+**Type:** `low_distinctness`
+**Detects:** Features with very few distinct values
+
+**When triggered:**
+- HIGH: < 10% distinctness
+
+**Example:**
+```
+🔴 [low_distinctness] binary_flag
+   Only 0.2% of values are distinct (2/1000)
+   Severity: HIGH
+```
+
+**What this means:**
+- Feature has only 2 distinct values out of 1000 samples
+- This is likely a binary or near-binary feature
+- **Action:** Verify if feature provides enough information content
+
+---
+
 ## Data Types
 
 ### `Issue`
@@ -385,18 +517,27 @@ for issue in issues:
 
 ### `IssueType`
 
-Enum of all issue types detected in v0.1.
+Enum of all issue types detected in v0.2.
 
 **Values:**
 
 ```python
 class IssueType(Enum):
+    # v0.1 Detectors
     HIGH_NULL_RATE = "missing_values"
     DUPLICATE_SAMPLES = "duplicates"
     SCHEMA_VIOLATION = "schema_violation"
     OUT_OF_RANGE = "out_of_range"
     TRAIN_TEST_SKEW = "train_test_skew"
+
+    # v0.2 Enriched Detectors
     CLASS_IMBALANCE = "class_imbalance"
+    LOW_COMPLETENESS = "low_completeness"
+    HIGH_CARDINALITY = "high_cardinality"
+    LOW_ENTROPY = "low_entropy"
+    HIGH_ENTROPY = "high_entropy"
+    LOW_UNIQUENESS = "low_uniqueness"
+    LOW_DISTINCTNESS = "low_distinctness"
 ```
 
 **Example:**
@@ -696,19 +837,34 @@ critical_only = [i for i in issues if i.severity.value == "high"]
 
 ## Version History
 
-**v0.1 (current):**
-- 6 detector types
+**v0.2 (current - 2026-05-08):**
+- **11 total detectors** (6 new + 5 existing)
+- **New enriched detectors:**
+  - ClassImbalanceDetector (label distribution analysis)
+  - CompletenessDetector (missing value analysis)
+  - CardinalityDetector (high cardinality detection)
+  - EntropyDetector (information content analysis)
+  - UniquenessDetector (duplicate value detection)
+  - DistinctnessDetector (distinct value analysis)
+- **Integration:**
+  - Chatbox support via natural language queries
+  - Claude Code skills (6 new skills in `.claude/skills/`)
+  - Skill routing in `CLAUDE.md`
+- **API enhancement:** `vint.profile(df, label_col='label')` for class imbalance detection
+
+**v0.1 (2026-05-02):**
+- 5 initial detector types
 - Binary classification support
 - Fixed thresholds
 - Directional impact estimates
 
-**v0.2 (planned):**
+**v0.3 (planned):**
 - Custom thresholds
-- Additional detectors (near-duplicates, label noise)
-- Confidence scores
-- What-if simulation
+- Multi-column metrics (correlation, mutual information)
+- Probabilistic algorithms (HyperLogLog)
+- Constraint-based validation
 
 ---
 
-**Last updated:** 2026-05-02
+**Last updated:** 2026-05-08
 **Maintained by:** DataVint Team
