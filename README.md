@@ -130,13 +130,18 @@ model.fit(cleaned_data)  # → AUC: 0.824 (+6.2%)
 - Label entropy per segment
 - Adaptive binning based on dataset size
 
-✅ **Issue Detection** - 6 automated detectors (< 1 sec)
+✅ **Issue Detection** - 11 automated detectors (< 1 sec)
 1. Missing values (high null rates)
 2. Duplicates (exact row duplicates)
 3. Schema violations (type mismatches, unexpected values)
 4. Numeric range violations (values outside training range)
 5. Train-test skew (distribution shifts)
 6. Class imbalance (extreme ratios)
+7. Completeness (features with low completeness/high missing rates)
+8. Distinctness (features with few distinct values)
+9. Uniqueness (features with many duplicate values)
+10. Entropy (unusually low or high information content)
+11. Cardinality (categorical features with too many unique values)
 
 ✅ **Manifest Generation & Application** - Automatic data quality optimization (NEW!)
 - Generate manifests from detected issues
@@ -146,12 +151,14 @@ model.fit(cleaned_data)  # → AUC: 0.824 (+6.2%)
 
 ### Coming Soon (v0.3)
 
-⏳ **Additional Detectors** - Expand to 10+ issue types
+⏳ **Additional Detectors** - Expand further
 - Near-duplicates
 - Label noise
 - Temporal drift
 - Underrepresented segments
 - Feature-label correlation drops
+- Approximate distinct counts (HyperLogLog)
+- Compliance & pattern matching
 
 ⏳ **Advanced Manifest Features**
 - Serialization (save/load JSON)
@@ -322,13 +329,18 @@ datavint/
 │   ├── manifest.py            # Manifest generation & application (v0.2)
 │   ├── config.py              # Configuration & thresholds
 │   ├── types.py               # Dataclasses
-│   └── detectors/             # 6 issue detectors
+│   └── detectors/             # 11 issue detectors
 │       ├── missing_values.py
 │       ├── duplicates.py
 │       ├── schema.py
 │       ├── range.py
 │       ├── skew.py
-│       └── imbalance.py
+│       ├── imbalance.py
+│       ├── completeness.py
+│       ├── distinctness.py
+│       ├── uniqueness.py
+│       ├── entropy.py
+│       └── cardinality.py
 │
 ├── docs/                       # Documentation
 │   ├── api/                   # API reference

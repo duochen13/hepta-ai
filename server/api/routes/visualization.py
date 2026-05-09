@@ -21,7 +21,8 @@ async def get_issues(dataset_id: str = Query(..., description="Dataset ID")):
         raise HTTPException(status_code=404, detail="Dataset not found")
 
     try:
-        from server.core import generate_statistics, detect_issues
+        from datavint.statistics import generate_statistics
+        from datavint.issues import detect_issues
 
         # Generate statistics and detect issues
         stats = generate_statistics(df, label_col=label_col)
@@ -29,7 +30,7 @@ async def get_issues(dataset_id: str = Query(..., description="Dataset ID")):
 
         # Convert issues to response format
         issue_items = []
-        severity_count = {'HIGH': 0, 'MEDIUM': 0, 'LOW': 0}
+        severity_count = {'high': 0, 'medium': 0, 'low': 0}
 
         for issue in issues:
             issue_item = IssueItem(
@@ -52,9 +53,9 @@ async def get_issues(dataset_id: str = Query(..., description="Dataset ID")):
             issues=issue_items,
             summary={
                 'total': len(issues),
-                'high': severity_count['HIGH'],
-                'medium': severity_count['MEDIUM'],
-                'low': severity_count['LOW']
+                'high': severity_count['high'],
+                'medium': severity_count['medium'],
+                'low': severity_count['low']
             }
         )
 
@@ -75,7 +76,9 @@ async def generate_manifest_endpoint(
         raise HTTPException(status_code=404, detail="Dataset not found")
 
     try:
-        from server.core import generate_statistics, detect_issues, generate_manifest
+        from datavint.statistics import generate_statistics
+        from datavint.issues import detect_issues
+        from datavint.profiling import generate_manifest
 
         # Generate statistics
         stats = generate_statistics(df, label_col=label_col)

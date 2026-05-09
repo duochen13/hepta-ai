@@ -126,25 +126,50 @@ async def get_statistics(dataset_id: str = Query(..., description="Dataset ID"))
         raise HTTPException(status_code=404, detail="Dataset not found")
 
     try:
-        from server.core import generate_statistics
+        from datavint.statistics import generate_statistics
 
         # Generate statistics
         stats = generate_statistics(df, label_col=label_col)
 
-        # Convert to dict format
+        # Convert to dict format with enriched metrics
         features_dict = {}
         for feature_name, feature_stats in stats.features.items():
             features_dict[feature_name] = {
-                'dtype': feature_stats.dtype,
+                'name': feature_stats.name,
+                'type': feature_stats.type,
+                'count': feature_stats.count,
+                'null_count': feature_stats.null_count,
                 'null_rate': feature_stats.null_rate,
+                # Enriched metrics (available for all features)
+                'completeness': feature_stats.completeness,
+                'distinct_count': feature_stats.distinct_count,
+                'distinctness': feature_stats.distinctness,
+                'uniqueness': feature_stats.uniqueness,
+                'unique_value_ratio': feature_stats.unique_value_ratio,
+                'entropy': feature_stats.entropy,
             }
-            if hasattr(feature_stats, 'mean'):
+
+            # Numeric-specific fields
+            if feature_stats.type == 'numeric':
                 features_dict[feature_name].update({
                     'mean': feature_stats.mean,
+                    'std': feature_stats.std,
+                    'min': feature_stats.min,
+                    'max': feature_stats.max,
+                    'median': feature_stats.median,
                     'p25': feature_stats.p25,
-                    'p50': feature_stats.p50,
                     'p75': feature_stats.p75,
                     'p99': feature_stats.p99,
+                    'sum': feature_stats.sum,
+                    'q10': feature_stats.q10,
+                    'q90': feature_stats.q90,
+                })
+
+            # Categorical-specific fields
+            if feature_stats.type == 'categorical':
+                features_dict[feature_name].update({
+                    'unique_count': feature_stats.unique_count,
+                    'top_values': feature_stats.top_values,
                 })
 
         return StatisticsResponse(
@@ -152,7 +177,10 @@ async def get_statistics(dataset_id: str = Query(..., description="Dataset ID"))
             statistics={
                 'n_rows': stats.n_rows,
                 'n_cols': stats.n_cols,
+                'label_col': stats.label_col,
                 'label_rate': stats.label_rate,
+                'label_entropy': stats.label_entropy,
+                'duplicate_count': stats.duplicate_count,
                 'duplicate_rate': stats.duplicate_rate,
                 'features': features_dict
             }

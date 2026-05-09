@@ -78,7 +78,7 @@ jupyter notebook
    └─> Detailed per-feature stats
 
 4. Detect issues (< 1 sec)
-   └─> Run all 6 detectors, display results
+   └─> Run all 11 detectors, display results
 
 5. [Coming in v0.2] Apply fixes
    └─> Generate manifest, apply to data

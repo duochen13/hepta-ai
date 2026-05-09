@@ -13,6 +13,11 @@ from .detectors.schema import SchemaViolationDetector
 from .detectors.range import NumericRangeDetector
 from .detectors.skew import TrainTestSkewDetector
 from .detectors.imbalance import ClassImbalanceDetector
+from .detectors.completeness import CompletenessDetector
+from .detectors.distinctness import DistinctnessDetector
+from .detectors.uniqueness import UniquenessDetector
+from .detectors.entropy import EntropyDetector
+from .detectors.cardinality import CardinalityDetector
 
 
 def detect_issues(
@@ -22,13 +27,18 @@ def detect_issues(
     """
     Detect all data quality issues from statistics.
 
-    Runs all 6 detectors in v0.1:
+    Runs all 11 detectors in v0.1:
     1. MissingValuesDetector - Features with high null rates
     2. DuplicatesDetector - Exact duplicate rows
     3. SchemaViolationDetector - Type mismatches, unexpected categorical values
     4. NumericRangeDetector - Numeric values outside training min/max range
     5. TrainTestSkewDetector - Distribution shift between train and test
     6. ClassImbalanceDetector - Extreme class imbalance
+    7. CompletenessDetector - Features with low completeness (high null rates)
+    8. DistinctnessDetector - Features with low distinctness (few distinct values)
+    9. UniquenessDetector - Features with low uniqueness (many duplicate values)
+    10. EntropyDetector - Features with unusually low or high entropy
+    11. CardinalityDetector - Categorical features with high cardinality (ID-like columns)
 
     Args:
         statistics: Training dataset statistics (required)
@@ -66,6 +76,11 @@ def detect_issues(
         NumericRangeDetector(),
         TrainTestSkewDetector(),
         ClassImbalanceDetector(),
+        CompletenessDetector(),
+        DistinctnessDetector(),
+        UniquenessDetector(),
+        EntropyDetector(),
+        CardinalityDetector(),
     ]
 
     # Run each detector

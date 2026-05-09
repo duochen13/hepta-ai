@@ -48,6 +48,12 @@ class IssueType(Enum):
     OUT_OF_RANGE = "out_of_range"  # Numeric values outside training min/max
     TRAIN_TEST_SKEW = "train_test_skew"
     CLASS_IMBALANCE = "class_imbalance"
+    # New statistical metric-based issues
+    LOW_COMPLETENESS = "low_completeness"  # Similar to HIGH_NULL_RATE but based on completeness metric
+    HIGH_ENTROPY = "high_entropy"  # Feature has very high entropy (random/noisy)
+    LOW_ENTROPY = "low_entropy"  # Feature has very low entropy (constant or near-constant)
+    HIGH_CARDINALITY = "high_cardinality"  # Too many unique values (ID-like feature)
+    LOW_UNIQUENESS = "low_uniqueness"  # Too many duplicate values
 
 
 @dataclass
@@ -70,10 +76,25 @@ class FeatureStats:
         p25: 25th percentile (numeric only)
         p75: 75th percentile (numeric only)
         p99: 99th percentile (numeric only)
+        sum: Sum of all values (numeric only)
+        q10: 10th percentile (numeric only)
+        q90: 90th percentile (numeric only)
 
         # Categorical-specific fields
         unique_count: Number of unique values (categorical only)
         top_values: Top value frequencies as {value: frequency} (categorical only)
+
+        # Cardinality & Distinctness metrics (both numeric and categorical)
+        distinct_count: Number of distinct values (occurs at least once)
+        distinctness: Fraction of distinct values over total values
+        uniqueness: Fraction of unique values (occurs exactly once) over total values
+        unique_value_ratio: Fraction of unique values over distinct values
+
+        # Completeness metric
+        completeness: Fraction of non-null values (1 - null_rate)
+
+        # Information theory metrics
+        entropy: Shannon entropy in nats (both numeric and categorical)
 
         # For skew detection (stored during statistics generation)
         histogram: Histogram data for JS divergence computation
@@ -93,10 +114,25 @@ class FeatureStats:
     p25: Optional[float] = None
     p75: Optional[float] = None
     p99: Optional[float] = None
+    sum: Optional[float] = None
+    q10: Optional[float] = None
+    q90: Optional[float] = None
 
     # Categorical-specific
     unique_count: Optional[int] = None
     top_values: Optional[Dict[str, float]] = None  # value -> frequency
+
+    # Cardinality & Distinctness metrics (both numeric and categorical)
+    distinct_count: Optional[int] = None
+    distinctness: Optional[float] = None
+    uniqueness: Optional[float] = None
+    unique_value_ratio: Optional[float] = None
+
+    # Completeness metric
+    completeness: Optional[float] = None
+
+    # Information theory metrics
+    entropy: Optional[float] = None
 
     # For skew detection - store histogram bins and counts
     histogram: Optional[Dict[str, Any]] = None
@@ -147,8 +183,17 @@ class DatasetStatistics:
                     "p25": stats.p25,
                     "p75": stats.p75,
                     "p99": stats.p99,
+                    "sum": stats.sum,
+                    "q10": stats.q10,
+                    "q90": stats.q90,
                     "unique_count": stats.unique_count,
                     "top_values": stats.top_values,
+                    "distinct_count": stats.distinct_count,
+                    "distinctness": stats.distinctness,
+                    "uniqueness": stats.uniqueness,
+                    "unique_value_ratio": stats.unique_value_ratio,
+                    "completeness": stats.completeness,
+                    "entropy": stats.entropy,
                 }
                 for name, stats in self.features.items()
             },

@@ -168,10 +168,41 @@ def _compute_feature_stats(df: pd.DataFrame, col: str, n_rows: int) -> FeatureSt
     null_count = int(s.isna().sum())
     null_rate = null_count / count
 
+    # Completeness metric (fraction of non-null values)
+    completeness = 1.0 - null_rate
+
+    # Cardinality & distinctness metrics
+    s_clean = s.dropna()
+    if len(s_clean) > 0:
+        # Distinct count: number of values that occur at least once
+        distinct_count = int(s_clean.nunique())
+
+        # Unique count: number of values that occur exactly once
+        value_counts = s_clean.value_counts()
+        unique_count = int((value_counts == 1).sum())
+
+        # Distinctness: fraction of distinct values over total values
+        distinctness = distinct_count / len(s_clean)
+
+        # Uniqueness: fraction of unique values over total values
+        uniqueness = unique_count / len(s_clean)
+
+        # Unique value ratio: fraction of unique values over distinct values
+        unique_value_ratio = unique_count / distinct_count if distinct_count > 0 else 0.0
+
+        # Entropy (Shannon entropy in nats)
+        feature_entropy = _compute_entropy(s_clean)
+    else:
+        distinct_count = 0
+        unique_count = 0
+        distinctness = 0.0
+        uniqueness = 0.0
+        unique_value_ratio = 0.0
+        feature_entropy = 0.0
+
     # Type-specific stats
     if pd.api.types.is_numeric_dtype(s):
         # Numeric feature
-        s_clean = s.dropna()
         if len(s_clean) > 0:
             # Store histogram for skew detection (adaptive bin count)
             bins = _compute_adaptive_bins(n_rows)
@@ -195,7 +226,17 @@ def _compute_feature_stats(df: pd.DataFrame, col: str, n_rows: int) -> FeatureSt
                 p25=float(s_clean.quantile(0.25)),
                 p75=float(s_clean.quantile(0.75)),
                 p99=float(s_clean.quantile(0.99)),
+                sum=float(s_clean.sum()),
+                q10=float(s_clean.quantile(0.10)),
+                q90=float(s_clean.quantile(0.90)),
                 histogram=histogram,
+                # New enriched metrics
+                distinct_count=distinct_count,
+                distinctness=distinctness,
+                uniqueness=uniqueness,
+                unique_value_ratio=unique_value_ratio,
+                completeness=completeness,
+                entropy=feature_entropy,
             )
         else:
             # All null
@@ -206,18 +247,21 @@ def _compute_feature_stats(df: pd.DataFrame, col: str, n_rows: int) -> FeatureSt
                 count=count,
                 null_count=null_count,
                 null_rate=null_rate,
+                completeness=completeness,
             )
     else:
         # Categorical feature
-        s_clean = s.dropna()
-        top_vals = s_clean.value_counts(normalize=True).head(10).to_dict()
+        top_vals = s_clean.value_counts(normalize=True).head(10).to_dict() if len(s_clean) > 0 else {}
 
         # For skew detection, store value counts (histogram equivalent for categorical)
-        value_counts = s_clean.value_counts().to_dict()
-        histogram = {
-            "type": "categorical",
-            "value_counts": value_counts,
-        }
+        if len(s_clean) > 0:
+            value_counts_dict = s_clean.value_counts().to_dict()
+            histogram = {
+                "type": "categorical",
+                "value_counts": value_counts_dict,
+            }
+        else:
+            histogram = {"type": "categorical", "value_counts": {}}
 
         return FeatureStats(
             name=col,
@@ -225,9 +269,16 @@ def _compute_feature_stats(df: pd.DataFrame, col: str, n_rows: int) -> FeatureSt
             count=count,
             null_count=null_count,
             null_rate=null_rate,
-            unique_count=int(s_clean.nunique()),
+            unique_count=unique_count,
             top_values=top_vals,
             histogram=histogram,
+            # New enriched metrics
+            distinct_count=distinct_count,
+            distinctness=distinctness,
+            uniqueness=uniqueness,
+            unique_value_ratio=unique_value_ratio,
+            completeness=completeness,
+            entropy=feature_entropy,
         )
 
 
