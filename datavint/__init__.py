@@ -31,7 +31,7 @@ Public API (v0.2):
 
 import pandas as pd
 from pathlib import Path
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 from .profiling import profile_dataset, compare_datasets
 from .statistics import generate_statistics
@@ -105,7 +105,7 @@ def load_demo_dataset(name: str) -> pd.DataFrame:
     return pd.read_csv(dataset_path)
 
 
-def profile(df: pd.DataFrame, return_dict: bool = False) -> Union[Tuple[DatasetStatistics, List[Issue]], Dict]:
+def profile(df: pd.DataFrame, label_col: Optional[str] = None, return_dict: bool = False) -> Union[Tuple[DatasetStatistics, List[Issue]], Dict]:
     """
     Simplified one-call profiling: generate statistics and detect issues.
 
@@ -114,6 +114,8 @@ def profile(df: pd.DataFrame, return_dict: bool = False) -> Union[Tuple[DatasetS
 
     Args:
         df: Input DataFrame to profile
+        label_col: Optional label/target column name for classification tasks.
+                  Required for ClassImbalanceDetector to run.
         return_dict: If True, return dict for JSON serialization (for API endpoints)
 
     Returns:
@@ -123,12 +125,12 @@ def profile(df: pd.DataFrame, return_dict: bool = False) -> Union[Tuple[DatasetS
     Example:
         >>> import datavint as vint
         >>> df = vint.load_demo_dataset('titanic')
-        >>> stats, issues = vint.profile(df)
+        >>> stats, issues = vint.profile(df, label_col='survived')
         >>> print(f"Found {len(issues)} data quality issues")
         Found 15 data quality issues
     """
     # Generate statistics
-    stats = generate_statistics(df)
+    stats = generate_statistics(df, label_col=label_col)
 
     # Detect issues
     issues = detect_issues(stats)

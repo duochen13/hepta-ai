@@ -92,6 +92,122 @@ result = {
 }
 ```
 
+EXAMPLE 4 - Class imbalance check:
+User: "what's the imbalance rate of dataset?"
+Response:
+```python
+import datavint as vint
+import pandas as pd
+
+# Auto-detect label column (common names: label, target, y, class, etc.)
+label_col = None
+common_label_names = ['label', 'target', 'y', 'class', 'is_fraud', 'churn', 'clicked', 'converted']
+for col in df.columns:
+    if col.lower() in common_label_names or col.lower().startswith(('is_', 'has_')):
+        label_col = col
+        break
+
+# Profile dataset with label column (runs all 11 detectors)
+stats, issues = vint.profile(df, label_col=label_col)
+
+# Extract imbalance issues
+imbalance_issues = [issue for issue in issues if issue['type'] == 'class_imbalance']
+
+# Calculate class distribution if label exists
+if label_col:
+    class_dist = df[label_col].value_counts(normalize=True).to_dict()
+else:
+    class_dist = None
+
+result = {
+    'stats': stats,
+    'issues': issues,
+    'imbalance_issues': imbalance_issues,
+    'class_distribution': class_dist,
+    'label_column': label_col
+}
+```
+
+EXAMPLE 5 - Completeness check (NEW detector):
+User: "check completeness of features"
+Response:
+```python
+import datavint as vint
+import pandas as pd
+
+# Profile dataset (includes completeness detector)
+stats, issues = vint.profile(df)
+
+# Extract completeness issues
+completeness_issues = [issue for issue in issues if issue['type'] == 'low_completeness']
+
+# Get completeness metrics per feature
+completeness_metrics = {}
+for feat_name, feat_stats in stats.features.items():
+    if hasattr(feat_stats, 'completeness') and feat_stats.completeness is not None:
+        completeness_metrics[feat_name] = {
+            'completeness': round(feat_stats.completeness * 100, 2),
+            'missing_rate': round((1 - feat_stats.completeness) * 100, 2)
+        }
+
+result = {
+    'stats': stats,
+    'issues': issues,
+    'completeness_issues': completeness_issues,
+    'completeness_metrics': completeness_metrics
+}
+```
+
+EXAMPLE 6 - Entropy and cardinality check (NEW detectors):
+User: "check for high cardinality or low information features"
+Response:
+```python
+import datavint as vint
+import pandas as pd
+
+# Profile dataset (includes entropy and cardinality detectors)
+stats, issues = vint.profile(df)
+
+# Extract relevant issues
+entropy_issues = [issue for issue in issues if 'entropy' in issue['type']]
+cardinality_issues = [issue for issue in issues if issue['type'] == 'high_cardinality']
+
+# Get enriched metrics per feature
+enriched_metrics = {}
+for feat_name, feat_stats in stats.features.items():
+    enriched_metrics[feat_name] = {
+        'type': feat_stats.type,
+        'distinct_count': feat_stats.distinct_count,
+        'distinctness': round(feat_stats.distinctness * 100, 2) if feat_stats.distinctness else None,
+        'uniqueness': round(feat_stats.uniqueness * 100, 2) if feat_stats.uniqueness else None,
+        'entropy': round(feat_stats.entropy, 3) if feat_stats.entropy else None,
+        'completeness': round(feat_stats.completeness * 100, 2) if feat_stats.completeness else None
+    }
+
+result = {
+    'stats': stats,
+    'issues': issues,
+    'entropy_issues': entropy_issues,
+    'cardinality_issues': cardinality_issues,
+    'enriched_metrics': enriched_metrics
+}
+```
+
+DataVint SDK Info - 11 Detectors:
+1. MissingValuesDetector - High null rates
+2. DuplicatesDetector - Exact duplicate rows
+3. SchemaViolationDetector - Type mismatches
+4. NumericRangeDetector - Out-of-range values
+5. TrainTestSkewDetector - Distribution shifts
+6. ClassImbalanceDetector - Extreme class ratios
+7. CompletenessDetector - Low completeness (NEW)
+8. DistinctnessDetector - Few distinct values (NEW)
+9. UniquenessDetector - Many duplicates (NEW)
+10. EntropyDetector - Low/high information content (NEW)
+11. CardinalityDetector - High cardinality categorical (NEW)
+
+All detectors run automatically with vint.profile(df).
+
 IMPORTANT: Return ONLY the Python code in a ```python code block. No explanations before or after.
 """
 
