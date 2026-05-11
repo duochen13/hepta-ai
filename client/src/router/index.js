@@ -28,6 +28,10 @@ const routes = [
       icon: '🔬',
     },
   },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/experiments',
+  },
 ]
 
 const router = createRouter({
