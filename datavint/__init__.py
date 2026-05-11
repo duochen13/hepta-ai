@@ -16,6 +16,10 @@ Public API (v0.2):
     - generate_manifest_from_path: Single-pass manifest generation from CSV
     - Manifest: Data quality manifest (row_mask, sample_weights, feature_fixes)
 
+    Experiment Tracking (NEW in v0.2):
+    - experiment: Context manager for tracking data versions and model runs
+    - ExperimentContext: Experiment tracking context with log_data() and log_run()
+
     Convenience API (for Code Playground):
     - load_demo_dataset: Load pre-configured demo datasets
     - profile: Simplified one-call profiling (stats + issues)
@@ -37,6 +41,7 @@ from .profiling import profile_dataset, compare_datasets
 from .statistics import generate_statistics
 from .issues import detect_issues, display_issues
 from .manifest import Manifest, generate_manifest, generate_manifest_from_path
+from .experiment import experiment, ExperimentContext
 from .types import DatasetStatistics, Issue, IssueSeverity, IssueType, DataVintError
 from .config import config
 
@@ -165,6 +170,9 @@ __all__ = [
     "Manifest",
     "generate_manifest",
     "generate_manifest_from_path",
+    # Experiment Tracking (v0.2)
+    "experiment",
+    "ExperimentContext",
     # Convenience API (Code Playground)
     "load_demo_dataset",
     "profile",
