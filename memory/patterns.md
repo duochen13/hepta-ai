@@ -1,5 +1,58 @@
 # Coding Patterns
 
+
+## [2026-05-11] Pre-push hook enforces memory updates before pushing to main
+
+**Pattern:** Git pre-push hook that ensures memory files are updated before pushing to main branch, maintaining context continuity across sessions.
+
+**Implementation:**
+```bash
+# .git/hooks/pre-push
+# 1. Detects branch being pushed (only enforces on main)
+# 2. Gets list of modified files in commits
+# 3. Checks if memory/*.md files were modified
+# 4. If not modified: warns and offers options
+```
+
+**Helper Script:**
+```bash
+# Quick add dated entries to memory files
+./.claude/scripts/update-memory.sh patterns "Your pattern description"
+./.claude/scripts/update-memory.sh decisions "Your decision"
+./.claude/scripts/update-memory.sh gotchas "Your gotcha"
+./.claude/scripts/update-memory.sh tips "Your tip"
+```
+
+**Hook Workflow:**
+1. User runs `git push` to main
+2. Hook checks if memory/ files modified in commits
+3. If not modified:
+   - **Option [a]**: Abort push - update memory first (recommended)
+   - **Option [c]**: Continue anyway (not recommended)
+   - **Option [e]**: Edit memory file now, commit it, then push
+4. If modified: push proceeds
+
+**Date Format:**
+All memory entries use `[YYYY-MM-DD]` format to prevent conflicts with old context:
+```markdown
+## [2026-05-11] Your Entry Title
+```
+
+**Why This Matters:**
+- Context is maintained across sessions
+- Learnings aren't lost between conversations
+- Patterns and decisions are documented
+- Future sessions start with full historical context
+- Prevents repeating mistakes
+
+**Files:**
+- `.git/hooks/pre-push` (git hook)
+- `.claude/scripts/update-memory.sh` (helper script)
+- `memory/README.md` (documentation)
+
+**Auto-loaded:**
+Memory files are loaded at session start via `.claude/load-memory.sh`, ensuring continuity.
+
 ## Hybrid Routing Architecture (2026-05-09)
 
 **Pattern:** Route user queries to either pre-defined skills (fast, free, reliable) or LLM code generation (flexible, slower, costly).
