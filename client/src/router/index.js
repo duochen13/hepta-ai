@@ -8,10 +8,6 @@ import ExperimentView from '../views/ExperimentView.vue'
 const routes = [
   {
     path: '/',
-    redirect: '/playground',
-  },
-  {
-    path: '/playground',
     name: 'Playground',
     component: ExperimentView,
     meta: {
@@ -20,7 +16,7 @@ const routes = [
     },
   },
   {
-    path: '/playground/:experimentId',
+    path: '/:experimentId',
     name: 'PlaygroundDetail',
     component: ExperimentView,
     meta: {
@@ -28,23 +24,14 @@ const routes = [
       icon: '🔬',
     },
   },
-  // Legacy alias for new URLs (in case anyone uses /experiments)
-  {
-    path: '/experiments',
-    redirect: '/playground',
-  },
-  {
-    path: '/experiments/:experimentId',
-    redirect: to => `/playground/${to.params.experimentId}`,
-  },
   {
     path: '/:pathMatch(.*)*',
-    redirect: '/playground',
+    redirect: '/',
   },
 ]
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory('/playground/'),
   routes,
 })
 
