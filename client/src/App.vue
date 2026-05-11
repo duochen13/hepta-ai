@@ -1,14 +1,21 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import ChatPanel from './components/ChatPanel.vue'
 
-const router = useRouter()
 const route = useRoute()
 
 // Chatbox toggle state
 const STORAGE_KEY = 'datavint_chatbox_collapsed'
 const chatboxCollapsed = ref(false)
+
+// Breadcrumb based on route
+const breadcrumb = computed(() => {
+  if (route.params.experimentId) {
+    return `experiments > ${route.params.experimentId}`
+  }
+  return 'experiments'
+})
 
 function toggleChatbox() {
   chatboxCollapsed.value = !chatboxCollapsed.value
@@ -51,13 +58,15 @@ onUnmounted(() => {
 
 <template>
   <div class="app">
-    <!-- Header with Tabs -->
-    <header class="header">
-      <!-- Hamburger Toggle (LEFT side, always visible) -->
+    <!-- Header -->
+    <header class="header" role="banner">
+      <!-- Hamburger Toggle -->
       <button
         class="hamburger-toggle"
         @click="toggleChatbox"
         :title="chatboxCollapsed ? 'Show Assistant (Ctrl+B)' : 'Hide Assistant (Ctrl+B)'"
+        :aria-label="chatboxCollapsed ? 'Show assistant sidebar' : 'Hide assistant sidebar'"
+        :aria-expanded="!chatboxCollapsed"
       >
         <div class="hamburger-icon">
           <span></span>
@@ -66,37 +75,33 @@ onUnmounted(() => {
         </div>
       </button>
 
+      <!-- Logo -->
       <div class="logo">
-        <div class="logo-icon">dv</div>
+        <div class="logo-icon" aria-hidden="true"></div>
         DataVint
       </div>
 
-      <nav class="tabs">
-        <button
-          v-for="tab in router.options.routes.filter(r => r.path !== '/')"
-          :key="tab.path"
-          :class="['tab', { active: route.path === tab.path }]"
-          @click="router.push(tab.path)"
-        >
-          <span class="tab-icon">{{ tab.meta.icon }}</span>
-          {{ tab.meta.title }}
-        </button>
+      <!-- Breadcrumb -->
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <span class="breadcrumb-item">{{ breadcrumb }}</span>
       </nav>
     </header>
 
     <!-- Main Content: Split Panel -->
     <div class="content-wrapper">
-      <!-- Chat Panel (Left Sidebar - 25%) -->
+      <!-- Chat Panel (Left Sidebar) -->
       <aside
         v-show="!chatboxCollapsed"
         class="chat-sidebar"
         :class="{ collapsed: chatboxCollapsed }"
+        role="complementary"
+        aria-label="Chat assistant"
       >
         <ChatPanel />
       </aside>
 
-      <!-- Main Content Area (Right - 75%) -->
-      <main class="main-content" :class="{ 'full-width': chatboxCollapsed }">
+      <!-- Main Content Area -->
+      <main class="main-content" :class="{ 'full-width': chatboxCollapsed }" role="main">
         <router-view v-slot="{ Component }">
           <transition name="fade" mode="out-in">
             <component :is="Component" />
@@ -117,23 +122,20 @@ onUnmounted(() => {
 
 /* Header */
 .header {
-  background: rgba(0, 0, 0, 0.95);
+  background: var(--bg-panel);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 2px solid var(--border);
+  border-bottom: 1px solid var(--border);
   display: flex;
-  align-items: stretch;
-  height: 52px;
+  align-items: center;
+  height: 57px;
   position: relative;
+  padding: 0 24px;
+  gap: 24px;
 }
 
-/* Hamburger Toggle - FIXED POSITION on left */
+/* Hamburger Toggle */
 .hamburger-toggle {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 10;
   width: 36px;
   height: 36px;
   background: transparent;
@@ -144,10 +146,18 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   border-radius: 4px;
+  flex-shrink: 0;
 }
 
-.hamburger-toggle:hover {
+.hamburger-toggle:hover,
+.hamburger-toggle:focus {
   background: var(--bg-hover);
+  outline: none;
+}
+
+.hamburger-toggle:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
 }
 
 .hamburger-icon {
@@ -171,79 +181,41 @@ onUnmounted(() => {
   background: var(--accent-cyan);
 }
 
+/* Logo */
 .logo {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 0 24px;
-  margin-left: 48px; /* Space for hamburger button */
-  border-right: 1px solid var(--border);
   font-weight: 600;
   font-size: 15px;
   letter-spacing: -0.01em;
   color: var(--text-primary);
+  flex-shrink: 0;
 }
 
 .logo-icon {
-  width: 20px;
-  height: 20px;
-  background: var(--accent-cyan);
-  border-radius: 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 600;
-  color: white;
+  width: 8px;
+  height: 8px;
+  background: var(--accent-purple);
+  border-radius: 2px;
 }
 
-.tabs {
-  display: flex;
-  align-items: stretch;
-  flex: 1;
-}
-
-.tab {
-  padding: 0 20px;
-  background: none;
-  border: none;
-  border-right: 1px solid var(--border);
-  color: var(--text-secondary);
-  font-family: var(--font-ui);
+/* Breadcrumb */
+.breadcrumb {
   font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s ease;
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
-  gap: 6px;
-  position: relative;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
 }
 
-.tab:hover {
-  background: var(--bg-hover);
+.breadcrumb-item {
   color: var(--text-primary);
-}
-
-.tab.active {
-  background: transparent;
-  color: var(--accent-cyan);
-  font-weight: 600;
-}
-
-.tab.active::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: var(--accent-cyan);
-}
-
-.tab-icon {
-  font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Content Wrapper: Split Panel */
@@ -255,14 +227,15 @@ onUnmounted(() => {
 
 /* Chat Sidebar */
 .chat-sidebar {
-  width: 25%;
+  width: 380px;
   min-width: 280px;
   max-width: 400px;
-  border-right: 3px solid var(--border);
+  border-right: 1px solid var(--border);
   transition: transform 0.3s ease, opacity 0.3s ease;
   transform: translateX(0);
   opacity: 1;
   background: var(--bg-panel);
+  flex-shrink: 0;
 }
 
 .chat-sidebar.collapsed {
@@ -276,6 +249,7 @@ onUnmounted(() => {
   flex: 1;
   overflow: hidden;
   transition: margin-left 0.3s ease;
+  min-width: 0;
 }
 
 .main-content.full-width {
@@ -303,6 +277,15 @@ onUnmounted(() => {
     z-index: 100;
     width: 80%;
     max-width: none;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .logo {
+    font-size: 14px;
+  }
+
+  .breadcrumb {
+    font-size: 12px;
   }
 }
 </style>

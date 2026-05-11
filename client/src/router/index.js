@@ -1,42 +1,31 @@
 /**
- * Vue Router Configuration
+ * Vue Router Configuration - Experiment Versioning Dashboard
  */
 
 import { createRouter, createWebHistory } from 'vue-router'
-import PlaygroundView from '../views/PlaygroundView.vue'
-import DataView from '../views/DataView.vue'
-import VisualizationView from '../views/VisualizationView.vue'
+import ExperimentView from '../views/ExperimentView.vue'
 
 const routes = [
   {
     path: '/',
-    redirect: '/playground',
+    redirect: '/experiments',
   },
   {
-    path: '/playground',
-    name: 'Playground',
-    component: PlaygroundView,
+    path: '/experiments',
+    name: 'Experiments',
+    component: ExperimentView,
     meta: {
-      title: 'Playground',
-      icon: '⚡',
+      title: 'Experiment Lineage',
+      icon: '🔬',
     },
   },
   {
-    path: '/data',
-    name: 'Data',
-    component: DataView,
+    path: '/experiments/:experimentId',
+    name: 'ExperimentDetail',
+    component: ExperimentView,
     meta: {
-      title: 'Raw Data',
-      icon: '📊',
-    },
-  },
-  {
-    path: '/visualization',
-    name: 'Visualization',
-    component: VisualizationView,
-    meta: {
-      title: 'Visualization Board',
-      icon: '📈',
+      title: 'Experiment Detail',
+      icon: '🔬',
     },
   },
 ]
@@ -50,7 +39,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   document.title = to.meta.title
     ? `${to.meta.title} - DataVint`
-    : 'DataVint - Data Quality Platform'
+    : 'DataVint - Experiment Versioning'
   next()
 })
 
