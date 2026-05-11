@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataVint Dashboard - Experiment Lineage</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: #0B0D0E;
+            color: #E5E7EB;
+            /* Dot mesh pattern */
+            background-image:
+                radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0);
+            background-size: 20px 20px;
+        }
+
+        /* Accessibility: Screen reader only text */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
+        /* Header */
+        .header {
+            background: #13151A;
+            border-bottom: 1px solid #2A2D35;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 600;
+            color: #F3F4F6;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-icon {
+            width: 8px;
+            height: 8px;
+            background: #8B5CF6;
+            border-radius: 2px;
+        }
+
+        .breadcrumb {
+            font-size: 13px;
+            color: #9CA3AF;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .breadcrumb-separator {
+            color: #4B5563;
+        }
+
+        .breadcrumb-item {
+            color: #9CA3AF;
+        }
+
+        .breadcrumb-item:last-child {
+            color: #F3F4F6;
+        }
+
+        /* Layout */
+        .container {
+            display: flex;
+            height: calc(100vh - 57px);
+        }
+
+        /* Chatbox Sidebar */
+        .chatbox-sidebar {
+            width: 380px;
+            background: #13151A;
+            border-right: 1px solid #2A2D35;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            padding: 20px;
+            border-bottom: 1px solid #2A2D35;
+        }
+
+        .chat-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #F3F4F6;
+            margin-bottom: 4px;
+        }
+
+        .chat-subtitle {
+            font-size: 13px;
+            color: #8A92A5; /* Increased contrast: 4.5:1 (WCAG AA compliant) */
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Custom scrollbar for dark theme */
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: #13151A;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #2A2D35;
+            border-radius: 3px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #374151;
+        }
+
+        .message {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .message.user {
+            align-items: flex-end;
+        }
+
+        .message.assistant {
+            align-items: flex-start;
+        }
+
+        .message-bubble {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .message.user .message-bubble {
+            background: #2A2D35;
+            color: #E5E7EB;
+        }
+
+        .message.assistant .message-bubble {
+            background: transparent;
+            color: #E5E7EB;
+            border: none;
+        }
+
+        .message-timestamp {
+            font-size: 11px;
+            color: #6B7280;
+            padding: 0 4px;
+        }
+
+        .suggested-queries {
+            padding: 12px 20px;
+            border-top: 1px solid #2A2D35;
+            border-bottom: 1px solid #2A2D35;
+        }
+
+        .suggested-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #6B7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .suggested-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .suggested-chip {
+            background: #1E2228;
+            border: 1px solid #2A2D35;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            color: #9CA3AF;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .suggested-chip:hover,
+        .suggested-chip:focus {
+            background: #8B5CF6;
+            color: white;
+            border-color: #8B5CF6;
+            outline: 2px solid #8B5CF6;
+            outline-offset: 2px;
+        }
+
+        .chat-input-container {
+            padding: 16px 20px;
+            border-top: 1px solid #2A2D35;
+            background: #13151A;
+        }
+
+        .chat-input-label {
+            font-size: 12px;
+            color: #8A92A5;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 10px 14px;
+            background: #1E2228;
+            border: 1px solid #2A2D35;
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: inherit;
+            color: #E5E7EB;
+            resize: none;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input:focus {
+            border-color: #8B5CF6;
+            outline: 2px solid #8B5CF6;
+            outline-offset: 2px;
+        }
+
+        .chat-input::placeholder {
+            color: #6B7280;
+        }
+
+        .send-button {
+            width: 36px;
+            height: 36px;
+            background: #8B5CF6;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .send-button:hover,
+        .send-button:focus {
+            background: #7C3AED;
+            outline: 2px solid #8B5CF6;
+            outline-offset: 2px;
+        }
+
+        .send-button:disabled {
+            background: #2A2D35;
+            cursor: not-allowed;
+        }
+
+        /* Graph Area */
+        .graph-area {
+            flex: 1;
+            padding: 32px;
+            overflow: auto;
+            position: relative;
+        }
+
+        .graph-area::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .graph-area::-webkit-scrollbar-track {
+            background: #0B0D0E;
+        }
+
+        .graph-area::-webkit-scrollbar-thumb {
+            background: #2A2D35;
+            border-radius: 4px;
+        }
+
+        .graph-area::-webkit-scrollbar-thumb:hover {
+            background: #374151;
+        }
+
+        .graph-container {
+            position: relative;
+            min-height: 600px;
+            background: #0B0D0E;
+            /* Dot pattern for canvas */
+            background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0);
+            background-size: 20px 20px;
+            border-radius: 12px;
+            padding: 48px;
+            border: 1px solid #2A2D35;
+        }
+
+        /* Graph Nodes */
+        .graph {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            min-height: 500px;
+        }
+
+        .branch {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .branch-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #6B7280;
+            margin-bottom: 32px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .nodes {
+            display: flex;
+            flex-direction: column;
+            gap: 48px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        /* Data Commit Node */
+        .data-node {
+            background: #1E2228;
+            border: 2px solid #2A2D35;
+            border-radius: 8px;
+            padding: 16px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .data-node:hover,
+        .data-node:focus {
+            border-color: #8B5CF6;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+            outline: none;
+        }
+
+        .data-node:focus-visible {
+            outline: 2px solid #8B5CF6;
+            outline-offset: 2px;
+        }
+
+        .data-node.active {
+            border-color: #8B5CF6;
+            background: #1A1626;
+        }
+
+        .node-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .node-id {
+            font-weight: 600;
+            font-size: 15px;
+            color: #F3F4F6;
+            font-family: 'Monaco', 'Consolas', monospace; /* Monospace for technical IDs */
+        }
+
+        .node-timestamp {
+            font-size: 11px;
+            color: #6B7280;
+        }
+
+        .node-message {
+            font-size: 13px;
+            color: #A8B0C0; /* Increased contrast: 4.6:1 (WCAG AA compliant) */
+            margin-bottom: 8px;
+        }
+
+        .node-meta {
+            font-size: 11px;
+            color: #6B7280;
+            font-family: 'Monaco', 'Consolas', monospace;
+        }
+
+        /* Sweep Cluster */
+        .sweep-cluster {
+            background: #1A1D23;
+            border: 2px dashed #2A2D35;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 32px;
+        }
+
+        .sweep-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #9CA3AF;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+        }
+
+        .sweep-label-icon {
+            width: 20px;
+            height: 20px;
+            background: #2A2D35;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 8px;
+            font-size: 11px;
+            color: #8B5CF6;
+            font-weight: 700;
+        }
+
+        .sweep-models {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Model Run Node */
+        .model-node {
+            background: #1E2228;
+            border: 2px solid #2A2D35;
+            border-radius: 8px;
+            padding: 16px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .model-node:hover,
+        .model-node:focus {
+            border-color: #10B981;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+            outline: none;
+        }
+
+        .model-node:focus-visible {
+            outline: 2px solid #10B981;
+            outline-offset: 2px;
+        }
+
+        .model-node.active {
+            border-color: #10B981;
+            background: #0F1F19;
+        }
+
+        .model-node.best {
+            border-color: #10B981;
+            border-width: 3px;
+        }
+
+        .model-node.sweep-winner {
+            border-color: #F59E0B;
+            background: #1F1A0F;
+        }
+
+        .best-badge {
+            position: absolute;
+            top: -10px;
+            right: 12px;
+            background: #10B981;
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 12px;
+        }
+
+        .sweep-winner-badge {
+            position: absolute;
+            top: -10px;
+            right: 12px;
+            background: #F59E0B;
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 12px;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .metric {
+            background: #1A1D23;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #2A2D35;
+        }
+
+        .metric-label {
+            font-size: 10px;
+            color: #6B7280;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .metric-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #E5E7EB;
+            margin-top: 2px;
+        }
+
+        .metric-value.good { color: #10B981; }
+        .metric-value.ok { color: #F59E0B; }
+        .metric-value.bad { color: #EF4444; }
+
+        /* Connection Lines (SVG overlay) */
+        #connections {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .connection-line {
+            stroke: #2A2D35;
+            stroke-width: 2;
+            fill: none;
+            opacity: 0.6;
+            transition: all 0.2s;
+        }
+
+        .connection-line.active {
+            stroke: #8B5CF6;
+            stroke-width: 3;
+            opacity: 1;
+        }
+
+        .connection-line.best {
+            stroke: #10B981;
+            stroke-width: 3;
+            opacity: 1;
+        }
+
+        /* Comparison Panel */
+        .comparison-panel {
+            margin-top: 24px;
+            padding: 20px;
+            background: #1F1A0F;
+            border: 1px solid #3A2F1D;
+            border-radius: 8px;
+        }
+
+        .comparison-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #FCD34D;
+            margin-bottom: 12px;
+        }
+
+        .comparison-insight {
+            font-size: 13px;
+            color: #D1D5DB;
+            line-height: 1.6;
+        }
+
+        .comparison-insight strong {
+            color: #F3F4F6;
+        }
+
+        /* Legend */
+        .legend {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            background: #1E2228;
+            border: 1px solid #2A2D35;
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 12px;
+        }
+
+        .legend-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #F3F4F6;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .legend-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .legend-icon {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            margin-right: 8px;
+        }
+
+        .legend-text {
+            color: #9CA3AF;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header" role="banner">
+        <div class="logo">
+            <div class="logo-icon" aria-hidden="true"></div>
+            DataVint
+        </div>
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+            <span class="breadcrumb-item">project</span>
+            <span class="breadcrumb-separator" aria-hidden="true">></span>
+            <span class="breadcrumb-item" aria-current="page">test_learning_rate_experiment</span>
+        </nav>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Chatbox Sidebar -->
+        <aside class="chatbox-sidebar" role="complementary" aria-label="Chat assistant">
+            <div class="chat-header">
+                <div class="chat-title">Assistant</div>
+                <div class="chat-subtitle">Ask about your experiments</div>
+            </div>
+
+            <div class="chat-messages" id="chat-messages" role="log" aria-live="polite" aria-label="Chat conversation">
+                <div class="message assistant">
+                    <div class="message-bubble">
+                        👋 Hi! I can help you understand your experiment results. Try asking me about your data or models.
+                    </div>
+                    <div class="message-timestamp">2h ago</div>
+                </div>
+
+                <div class="message user">
+                    <div class="message-bubble">
+                        Which data version improved NE the most?
+                    </div>
+                    <div class="message-timestamp">1h ago</div>
+                </div>
+
+                <div class="message assistant">
+                    <div class="message-bubble">
+                        <strong>D1</strong> (fix user feature coverage) produced the best results. Models trained on D1 achieved:
+                        <br><br>
+                        • <strong>M2.2:</strong> 0.867 NE (+1.3% vs best D0 model)<br>
+                        • <strong>M2.1:</strong> 0.841 NE<br>
+                        <br>
+                        The improved feature coverage in D1 was the key factor.
+                    </div>
+                    <div class="message-timestamp">1h ago</div>
+                </div>
+
+                <div class="message user">
+                    <div class="message-bubble">
+                        Why did M2 win in Sweep 1?
+                    </div>
+                    <div class="message-timestamp">30m ago</div>
+                </div>
+
+                <div class="message assistant">
+                    <div class="message-bubble">
+                        <strong>M2</strong> (lr=0.005) had the best balance:
+                        <br><br>
+                        • NE: 0.856 (highest in sweep)<br>
+                        • Learning rate wasn't too aggressive (M1, M0 overfit)<br>
+                        • Learning rate wasn't too conservative (M3 underfit)<br>
+                        <br>
+                        That's why lr=0.005 was selected for Sweep 2.
+                    </div>
+                    <div class="message-timestamp">30m ago</div>
+                </div>
+            </div>
+
+            <div class="suggested-queries">
+                <div class="suggested-title">Suggested</div>
+                <div class="suggested-chips" role="group" aria-label="Suggested questions">
+                    <button class="suggested-chip" tabindex="0">Compare M2.1 vs M2.2</button>
+                    <button class="suggested-chip" tabindex="0">Show all NE scores</button>
+                    <button class="suggested-chip" tabindex="0">Explain Sweep 2</button>
+                </div>
+            </div>
+
+            <div class="chat-input-container">
+                <label for="chat-input" class="chat-input-label">Ask a question</label>
+                <div class="chat-input-wrapper">
+                    <textarea
+                        class="chat-input"
+                        placeholder="Ask about your experiments..."
+                        rows="1"
+                        id="chat-input"
+                        aria-label="Ask about your experiments"
+                    ></textarea>
+                    <button class="send-button" id="send-button" aria-label="Send message">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Graph Area -->
+        <main class="graph-area" role="main" aria-label="Experiment lineage graph">
+            <div class="graph-container">
+                <!-- Legend -->
+                <aside class="legend" role="complementary" aria-label="Graph legend">
+                    <div class="legend-title">Legend</div>
+                    <div class="legend-item">
+                        <div class="legend-icon" style="background: #1E2228; border: 2px solid #2A2D35;" aria-hidden="true"></div>
+                        <span class="legend-text">Data Commit</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-icon" style="background: #1F1A0F; border: 2px solid #F59E0B;" aria-hidden="true"></div>
+                        <span class="legend-text">Sweep Winner</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-icon" style="background: #0F1F19; border: 3px solid #10B981;" aria-hidden="true"></div>
+                        <span class="legend-text">Overall Best</span>
+                    </div>
+                </aside>
+
+                <svg id="connections" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg>
+
+                <div class="graph">
+                    <!-- Data Branch (Left) -->
+                    <section class="branch">
+                        <h2 class="branch-label">Data Commits</h2>
+                        <div class="nodes" id="data-nodes">
+                            <!-- D1 -->
+                            <article
+                                class="data-node"
+                                data-id="D1"
+                                tabindex="0"
+                                role="button"
+                                aria-label="Data commit D1: fix user feature coverage, hash a3f9d2c, 1.2 million rows, created 2 hours ago"
+                            >
+                                <div class="node-header">
+                                    <span class="node-id">D1</span>
+                                    <span class="node-timestamp">2h ago</span>
+                                </div>
+                                <div class="node-message">fix user feature coverage</div>
+                                <div class="node-meta">hash: a3f9d2c • 1.2M rows</div>
+                            </article>
+
+                            <!-- D0 -->
+                            <article
+                                class="data-node"
+                                data-id="D0"
+                                tabindex="0"
+                                role="button"
+                                aria-label="Data commit D0: dedup interactions, hash 7b2e8f1, 1.5 million rows, created 5 hours ago"
+                            >
+                                <div class="node-header">
+                                    <span class="node-id">D0</span>
+                                    <span class="node-timestamp">5h ago</span>
+                                </div>
+                                <div class="node-message">dedup interactions</div>
+                                <div class="node-meta">hash: 7b2e8f1 • 1.5M rows</div>
+                            </article>
+                        </div>
+                    </section>
+
+                    <!-- Model Branch (Right) -->
+                    <section class="branch">
+                        <h2 class="branch-label">Model Runs</h2>
+                        <div class="nodes" id="model-nodes">
+                            <!-- Sweep 2: Sample Rate (from D1) -->
+                            <div class="sweep-cluster" role="group" aria-label="Sweep 2: Sample Rate experiments from D1, learning rate 0.005">
+                                <div class="sweep-label">
+                                    <span class="sweep-label-icon" aria-hidden="true">2</span>
+                                    Sweep 2: Sample Rate (from D1, lr=0.005)
+                                </div>
+                                <div class="sweep-models">
+                                    <!-- M2.2 (Overall Best) -->
+                                    <article
+                                        class="model-node best"
+                                        data-id="M2.2"
+                                        tabindex="0"
+                                        role="button"
+                                        aria-label="Model run M2.2: Overall best model, sample rate 0.6, NE 0.867 excellent, CTR 0.0058 excellent, learning rate 0.005, coverage 94% excellent, created 1 hour ago"
+                                    >
+                                        <span class="best-badge">BEST</span>
+                                        <div class="node-header">
+                                            <span class="node-id">M2.2</span>
+                                            <span class="node-timestamp">1h ago</span>
+                                        </div>
+                                        <div class="node-message">sample_rate=0.6</div>
+                                        <div class="metrics">
+                                            <div class="metric">
+                                                <div class="metric-label">NE</div>
+                                                <div class="metric-value good">
+                                                    0.867
+                                                    <span class="sr-only">(excellent)</span>
+                                                </div>
+                                            </div>
+                                            <div class="metric">
+                                                <div class="metric-label">CTR</div>
+                                                <div class="metric-value good">
+                                                    0.0058
+                                                    <span class="sr-only">(excellent)</span>
+                                                </div>
+                                            </div>
+                                            <div class="metric">
+                                                <div class="metric-label">lr</div>
+                                                <div class="metric-value">0.005</div>
+                                            </div>
+                                            <div class="metric">
+                                                <div class="metric-label">coverage</div>
+                                                <div class="metric-value good">
+                                                    94%
+                                                    <span class="sr-only">(excellent)</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </article>
+
+                                    <!-- M2.1 -->
+                                    <article
+                                        class="model-node"
+                                        data-id="M2.1"
+                                        tabindex="0"
+                                        role="button"
+                                        aria-label="Model run M2.1: sample rate 0.4, NE 0.841 good, CTR 0.0051 good, learning rate 0.005, coverage 89% good, created 2 hours ago"
+                                    >
+                                        <div class="node-header">
+                                            <span class="node-id">M2.1</span>
+                                            <span class="node-timestamp">2h ago</span>
+                                        </div>
+                                        <div class="node-message">sample_rate=0.4</div>
+                                        <div class="metrics">
+                                            <div class="metric">
+                                                <div class="metric-label">NE</div>
+                                                <div class="metric-value ok">
+                                                    0.841
+                                                    <span class="sr-only">(good)</span>
+                                                </div>
+                                            </div>
+                                            <div class="metric">
+                                                <div class="metric-label">CTR</div>
+                                                <div class="metric-value ok">
+                                                    0.0051
+                                                    <span class="sr-only">(good)</span>
+                                                </div>
+                                            </div>
+                                            <div class="metric">
+                                                <div class="metric-label">lr</div>
+                                                <div class="metric-value">0.005</div>
+                                            </div>
+                                            <div class="metric">
+                                                <div class="metric-label">coverage</div>
+                                                <div class="metric-value ok">
+                                                    89%
+                                                    <span class="sr-only">(good)</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </article>
+                                </div>
+                            </div>
+
+                            <!-- Sweep 1: Learning Rate (from D0) -->
+                            <div class="sweep-cluster" role="group" aria-label="Sweep 1: Learning Rate experiments from D0">
+                                <div class="sweep-label">
+                                    <span class="sweep-label-icon" aria-hidden="true">1</span>
+                                    Sweep 1: Learning Rate (from D0)
+                                </div>
+                                <div class="sweep-models">
+                                    <!-- M2 (Sweep 1 Winner) -->
+                                    <article
+                                        class="model-node sweep-winner"
+                                        data-id="M2"
+                                        tabindex="0"
+                                        role="button"
+                                        aria-label="Model run M2: Sweep 1 winner, learning rate 0.005 selected for Sweep 2, NE 0.856 excellent, CTR 0.0053 excellent, created 5 hours ago"
+                                    >
+                                        <span class="sweep-winner-badge">Sweep 1 Winner</span>
+                                        <div class="node-header">
+                                            <span class="node-id">M2</span>
+                                            <span class="node-timestamp">5h ago</span>
+                                        </div>
+                                        <div class="node-message">lr=0.005 ← selected for Sweep 2</div>
+                                        <div class="metrics">
+                                            <div class="metric">
+                                                <div class="metric-label">NE</div>
+                                                <div class="metric-value good">
+                                                    0.856
+                                                    <span class="sr-only">(excellent)</span>
+                                                </div>
+                                            </div>
+                                            <div class="metric">
+                                                <div class="metric-label">CTR</div>
+                                                <div class="metric-value good">
+                                                    0.0053
+                                                    <span class="sr-only">(excellent)</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </article>
+
+                                    <!-- M3 -->
+                                    <article
+                                        class="model-node"
+                                        data-id="M3"
+                                        tabindex="0"
+                                        role="button"
+                                        aria-label="Model run M3: learning rate 0.010, NE 0.823 good, CTR 0.0047, created 5 hours ago"
+                                    >
+                                        <div class="node-header">
+                                            <span class="node-id">M3</span>
+                                            <span class="node-timestamp">5h ago</span>
+                                        </div>
+                                        <div class="node-message">lr=0.010</div>
+                                        <div class="metrics">
+                                            <div class="metric">
+                                                <div class="metric-label">NE</div>
+                                                <div class="metric-value ok">
+                                                    0.823
+                                                    <span class="sr-only">(good)</span>
+                                                </div>
+                                            </div>
+                                            <div class="metric">
+                                                <div class="metric-label">CTR</div>
+                                                <div class="metric-value">0.0047</div>
+                                            </div>
+                                        </div>
+                                    </article>
+
+                                    <!-- M1 -->
+                                    <article
+                                        class="model-node"
+                                        data-id="M1"
+                                        tabindex="0"
+                                        role="button"
+                                        aria-label="Model run M1: learning rate 0.020, NE 0.801 poor, CTR 0.0042, created 6 hours ago"
+                                    >
+                                        <div class="node-header">
+                                            <span class="node-id">M1</span>
+                                            <span class="node-timestamp">6h ago</span>
+                                        </div>
+                                        <div class="node-message">lr=0.020</div>
+                                        <div class="metrics">
+                                            <div class="metric">
+                                                <div class="metric-label">NE</div>
+                                                <div class="metric-value bad">
+                                                    0.801
+                                                    <span class="sr-only">(poor)</span>
+                                                </div>
+                                            </div>
+                                            <div class="metric">
+                                                <div class="metric-label">CTR</div>
+                                                <div class="metric-value">0.0042</div>
+                                            </div>
+                                        </div>
+                                    </article>
+
+                                    <!-- M0 -->
+                                    <article
+                                        class="model-node"
+                                        data-id="M0"
+                                        tabindex="0"
+                                        role="button"
+                                        aria-label="Model run M0: learning rate 0.030, NE 0.788 poor, CTR 0.0039, created 6 hours ago"
+                                    >
+                                        <div class="node-header">
+                                            <span class="node-id">M0</span>
+                                            <span class="node-timestamp">6h ago</span>
+                                        </div>
+                                        <div class="node-message">lr=0.030</div>
+                                        <div class="metrics">
+                                            <div class="metric">
+                                                <div class="metric-label">NE</div>
+                                                <div class="metric-value bad">
+                                                    0.788
+                                                    <span class="sr-only">(poor)</span>
+                                                </div>
+                                            </div>
+                                            <div class="metric">
+                                                <div class="metric-label">CTR</div>
+                                                <div class="metric-value">0.0039</div>
+                                            </div>
+                                        </div>
+                                    </article>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Comparison Panel -->
+                <aside class="comparison-panel" role="complementary" aria-label="Experiment flow summary">
+                    <div class="comparison-title">🎯 Experiment Flow</div>
+                    <div class="comparison-insight">
+                        <strong>Sweep 1:</strong> Tried 4 learning rates on D0 (deduped data). M2 (lr=0.005) achieved best NE (0.856).<br><br>
+                        <strong>Sweep 2:</strong> Fixed lr=0.005, moved to D1 (better feature coverage), swept sample_rate. M2.2 (sample_rate=0.6) achieved <strong>0.867 NE</strong> — a <strong>+1.3% improvement</strong> from combining optimal hyperparameters with better data quality.
+                    </div>
+                </aside>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Draw connection lines
+        const svg = document.getElementById('connections');
+        const graphContainer = document.querySelector('.graph-container');
+
+        // Connection mappings (data_node_id -> [model_node_ids])
+        const connections = {
+            'D1': ['M2.2', 'M2.1'],
+            'D0': ['M3', 'M2', 'M1', 'M0']
+        };
+
+        function getNodeCenter(nodeId) {
+            const node = document.querySelector(`[data-id="${nodeId}"]`);
+            if (!node) return null;
+
+            const rect = node.getBoundingClientRect();
+            const containerRect = graphContainer.getBoundingClientRect();
+
+            return {
+                x: rect.left - containerRect.left + rect.width / 2,
+                y: rect.top - containerRect.top + rect.height / 2
+            };
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        function drawConnections() {
+            // Clear existing lines
+            svg.innerHTML = '';
+            svg.setAttribute('width', graphContainer.offsetWidth);
+            svg.setAttribute('height', graphContainer.offsetHeight);
+
+            // Draw all connections
+            Object.keys(connections).forEach(dataId => {
+                const dataCenter = getNodeCenter(dataId);
+                if (!dataCenter) return;
+
+                connections[dataId].forEach(modelId => {
+                    const modelCenter = getNodeCenter(modelId);
+                    if (!modelCenter) return;
+
+                    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    const midX = (dataCenter.x + modelCenter.x) / 2;
+
+                    const d = `M ${dataCenter.x} ${dataCenter.y}
+                               C ${midX} ${dataCenter.y}, ${midX} ${modelCenter.y}, ${modelCenter.x} ${modelCenter.y}`;
+
+                    path.setAttribute('d', d);
+                    path.setAttribute('class', `connection-line ${modelId === 'M2.2' ? 'best' : ''}`);
+                    path.setAttribute('data-from', dataId);
+                    path.setAttribute('data-to', modelId);
+
+                    svg.appendChild(path);
+                });
+            });
+        }
+
+        // Initial draw
+        setTimeout(drawConnections, 100);
+
+        // Debounced resize handler for performance
+        const debouncedRedraw = debounce(drawConnections, 150);
+        window.addEventListener('resize', debouncedRedraw);
+
+        // Interactive highlights
+        const dataNodes = document.querySelectorAll('.data-node');
+        const modelNodes = document.querySelectorAll('.model-node');
+
+        // Add keyboard navigation to data nodes
+        dataNodes.forEach(node => {
+            // Mouse events
+            node.addEventListener('mouseenter', () => {
+                const nodeId = node.getAttribute('data-id');
+                node.classList.add('active');
+
+                // Highlight connected models
+                connections[nodeId]?.forEach(modelId => {
+                    document.querySelector(`[data-id="${modelId}"]`)?.classList.add('active');
+
+                    // Highlight connection lines
+                    document.querySelectorAll(`[data-from="${nodeId}"][data-to="${modelId}"]`)
+                        .forEach(line => line.classList.add('active'));
+                });
+            });
+
+            node.addEventListener('mouseleave', () => {
+                document.querySelectorAll('.active').forEach(el => el.classList.remove('active'));
+            });
+
+            // Keyboard events
+            node.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    node.click();
+                    // Toggle focus state
+                    node.classList.toggle('active');
+                }
+            });
+        });
+
+        // Add keyboard navigation to model nodes
+        modelNodes.forEach(node => {
+            // Mouse events
+            node.addEventListener('mouseenter', () => {
+                const modelId = node.getAttribute('data-id');
+                node.classList.add('active');
+
+                // Find which data node connects to this model
+                Object.keys(connections).forEach(dataId => {
+                    if (connections[dataId].includes(modelId)) {
+                        document.querySelector(`[data-id="${dataId}"]`)?.classList.add('active');
+
+                        // Highlight connection line
+                        document.querySelectorAll(`[data-from="${dataId}"][data-to="${modelId}"]`)
+                            .forEach(line => line.classList.add('active'));
+                    }
+                });
+            });
+
+            node.addEventListener('mouseleave', () => {
+                document.querySelectorAll('.active').forEach(el => el.classList.remove('active'));
+            });
+
+            // Keyboard events
+            node.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    node.click();
+                    // Toggle focus state
+                    node.classList.toggle('active');
+                }
+            });
+        });
+
+        // Chat functionality
+        const chatInput = document.getElementById('chat-input');
+        const sendButton = document.getElementById('send-button');
+        const chatMessages = document.getElementById('chat-messages');
+
+        // Auto-resize textarea
+        chatInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+
+        // Send message on Enter (Shift+Enter for newline)
+        chatInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        sendButton.addEventListener('click', sendMessage);
+
+        function sendMessage() {
+            const text = chatInput.value.trim();
+            if (!text) return;
+
+            // Add user message
+            const userMsg = document.createElement('div');
+            userMsg.className = 'message user';
+            userMsg.innerHTML = `
+                <div class="message-bubble">${escapeHtml(text)}</div>
+                <div class="message-timestamp">Just now</div>
+            `;
+            chatMessages.appendChild(userMsg);
+
+            // Clear input
+            chatInput.value = '';
+            chatInput.style.height = 'auto';
+
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Simulate assistant response
+            setTimeout(() => {
+                const assistantMsg = document.createElement('div');
+                assistantMsg.className = 'message assistant';
+                assistantMsg.innerHTML = `
+                    <div class="message-bubble">
+                        I can help with that! Try clicking on nodes in the graph to explore connections, or ask me more specific questions about your experiments.
+                    </div>
+                    <div class="message-timestamp">Just now</div>
+                `;
+                chatMessages.appendChild(assistantMsg);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 800);
+        }
+
+        // XSS protection helper
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Suggested query clicks - keyboard accessible
+        document.querySelectorAll('.suggested-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                chatInput.value = chip.textContent;
+                chatInput.focus();
+            });
+
+            chip.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    chatInput.value = chip.textContent;
+                    chatInput.focus();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
