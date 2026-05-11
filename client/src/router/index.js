@@ -1,5 +1,6 @@
 /**
  * Vue Router Configuration - Experiment Versioning Dashboard
+ * Base path: /playground/
  */
 
 import { createRouter, createWebHistory } from 'vue-router'

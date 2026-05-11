@@ -5,8 +5,15 @@
 # 1. Detect new GitHub issues (created within 60 seconds)
 # 2. Run basic Issue Review (quick validation)
 # 3. If score >= 7/10, offer to convert to plan and run /plan-eng-review
+# 4. Run client code e2e tests if client files changed
 #
 # This provides both quick scope validation and deep engineering analysis.
+
+# Run client code e2e tests hook
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -x "$SCRIPT_DIR/client-change-hook.sh" ]; then
+    "$SCRIPT_DIR/client-change-hook.sh"
+fi
 
 # Check if gh CLI is available
 if ! command -v gh &> /dev/null; then
