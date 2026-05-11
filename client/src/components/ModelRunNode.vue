@@ -218,7 +218,7 @@ const ariaLabel = computed(() => {
 }
 
 .metric-value.good {
-  color: var(--accent-green); /* Highest NE (best performance) */
+  color: var(--accent-green); /* Lowest NE (best performance) */
 }
 
 .metric-value.ok {
@@ -226,6 +226,6 @@ const ariaLabel = computed(() => {
 }
 
 .metric-value.bad {
-  color: var(--accent-light-green); /* Lower NE (still viable, just not top tier) */
+  color: var(--accent-light-green); /* Higher NE (still viable, just not top tier) */
 }
 </style>

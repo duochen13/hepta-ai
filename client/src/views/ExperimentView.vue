@@ -45,9 +45,9 @@ async function fetchExperimentLineage() {
 
 // Mock data for development (based on dashboard mockup)
 // Winner Selection Logic:
-//   - Overall Best: Highest NE across all model runs (M2.2: 0.867)
-//   - Sweep Winner: Highest NE within that sweep (Sweep 1: M2 with 0.856, Sweep 2: M2.2 with 0.867)
-//   - For recommendation systems, higher NE (Normalized Entropy) = better model performance
+//   - Overall Best: Lowest NE across all model runs (M0: 0.685)
+//   - Sweep Winner: Lowest NE within that sweep
+//   - Lower NE (Normalized Entropy) = better model performance
 function loadMockData() {
   dataCommits.value = [
     {
@@ -72,13 +72,13 @@ function loadMockData() {
       dataCommitId: 'D1',
       message: 'sample_rate=0.6',
       metrics: {
-        NE: { value: 0.867, quality: 'good' },
+        NE: { value: 0.701, quality: 'ok' },
         CTR: { value: 0.0058, quality: 'good' },
         lr: { value: 0.005, quality: 'neutral' },
         coverage: { value: '94%', quality: 'good' },
       },
       timestamp: new Date(Date.now() - 1 * 3600000).toISOString(),
-      best: true,
+      sweepWinner: true,
       sweep: { id: 2, name: 'Sample Rate (from D1, lr=0.005)' },
     },
     {
@@ -86,7 +86,7 @@ function loadMockData() {
       dataCommitId: 'D1',
       message: 'sample_rate=0.4',
       metrics: {
-        NE: { value: 0.841, quality: 'ok' },
+        NE: { value: 0.723, quality: 'bad' },
         CTR: { value: 0.0051, quality: 'ok' },
         lr: { value: 0.005, quality: 'neutral' },
         coverage: { value: '89%', quality: 'ok' },
@@ -99,11 +99,10 @@ function loadMockData() {
       dataCommitId: 'D0',
       message: 'lr=0.005 ← selected for Sweep 2',
       metrics: {
-        NE: { value: 0.856, quality: 'good' },
+        NE: { value: 0.712, quality: 'ok' },
         CTR: { value: 0.0053, quality: 'good' },
       },
       timestamp: new Date(Date.now() - 5 * 3600000).toISOString(),
-      sweepWinner: true,
       sweep: { id: 1, name: 'Learning Rate (from D0)' },
     },
     {
@@ -111,7 +110,7 @@ function loadMockData() {
       dataCommitId: 'D0',
       message: 'lr=0.010',
       metrics: {
-        NE: { value: 0.823, quality: 'ok' },
+        NE: { value: 0.734, quality: 'bad' },
         CTR: { value: 0.0047, quality: 'neutral' },
       },
       timestamp: new Date(Date.now() - 5 * 3600000).toISOString(),
@@ -122,10 +121,11 @@ function loadMockData() {
       dataCommitId: 'D0',
       message: 'lr=0.020',
       metrics: {
-        NE: { value: 0.801, quality: 'bad' },
+        NE: { value: 0.698, quality: 'ok' },
         CTR: { value: 0.0042, quality: 'neutral' },
       },
       timestamp: new Date(Date.now() - 6 * 3600000).toISOString(),
+      sweepWinner: true,
       sweep: { id: 1, name: 'Learning Rate (from D0)' },
     },
     {
@@ -133,10 +133,11 @@ function loadMockData() {
       dataCommitId: 'D0',
       message: 'lr=0.030',
       metrics: {
-        NE: { value: 0.788, quality: 'bad' },
+        NE: { value: 0.685, quality: 'good' },
         CTR: { value: 0.0039, quality: 'neutral' },
       },
       timestamp: new Date(Date.now() - 6 * 3600000).toISOString(),
+      best: true,
       sweep: { id: 1, name: 'Learning Rate (from D0)' },
     },
   ]
@@ -208,8 +209,8 @@ onMounted(() => {
       <aside class="comparison-panel">
         <div class="comparison-title">🎯 Experiment Flow</div>
         <div class="comparison-insight">
-          <strong>Sweep 1:</strong> Tried 4 learning rates on D0 (deduped data). M2 (lr=0.005) achieved best NE (0.856).<br><br>
-          <strong>Sweep 2:</strong> Fixed lr=0.005, moved to D1 (better feature coverage), swept sample_rate. M2.2 (sample_rate=0.6) achieved <strong>0.867 NE</strong> — a <strong>+1.3% improvement</strong> from combining optimal hyperparameters with better data quality.
+          <strong>Sweep 1:</strong> Tried 4 learning rates on D0 (deduped data). M1 (lr=0.020) achieved lowest NE (0.698), but M0 (lr=0.030) achieved <strong>0.685 NE</strong> — the overall best performance.<br><br>
+          <strong>Sweep 2:</strong> Fixed lr=0.005 from M1, moved to D1 (better feature coverage), swept sample_rate. M2.2 (sample_rate=0.6) achieved <strong>0.701 NE</strong> — winning Sweep 2 with improved data quality.
         </div>
       </aside>
     </div>

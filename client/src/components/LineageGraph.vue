@@ -121,7 +121,7 @@ function drawConnections() {
             C ${midX} ${dataCenter.y}, ${midX} ${modelCenter.y}, ${modelCenter.x} ${modelCenter.y}`,
         classes: {
           active: activeDataNodes.value.has(dataId) && activeModelNodes.value.has(modelId),
-          best: modelId === 'M2.2', // Best model gets highlighted
+          best: modelId === 'M0', // Best model gets highlighted (lowest NE)
         },
         from: dataId,
         to: modelId,
@@ -244,7 +244,7 @@ onMounted(async () => {
 }
 
 .connection-line {
-  stroke: var(--border);
+  stroke: var(--accent-light-green);
   stroke-width: 2;
   fill: none;
   opacity: 0.6;
