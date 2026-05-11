@@ -1,5 +1,74 @@
 # Architectural Decisions
 
+## [2026-05-11] Sequential Hyperparameter Tuning: Local Optima Risk (Future Consideration)
+
+**Observation:** Mock data shows sequential sweeps (Sweep 1: lr → pick best → Sweep 2: sample_rate with fixed lr). This pattern can miss global optimum.
+
+**The Problem:**
+```
+Sweep 1: Test lr=[0.001, 0.005, 0.01, 0.02] with sample_rate=0.5 (default)
+         Pick best: lr=0.005 (NE=0.712 at sample_rate=0.5)
+
+Sweep 2: Test sample_rate=[0.4, 0.6, 0.8] with lr=0.005 (fixed)
+         Pick best: sample_rate=0.6 (NE=0.701 at lr=0.005)
+
+Issue: Best lr at sample_rate=0.5 may not be best lr at sample_rate=0.6
+Maybe: lr=0.008, sample_rate=0.6 → NE=0.690 (better, but never tested!)
+```
+
+**Why Hyperparameters Interact:**
+The optimal value of parameter A depends on the value of parameter B. Sequential optimization (greedy) can get stuck in local optima.
+
+**Counter-Arguments (Why Sequential is Still Valid):**
+1. **Computational Cost:** Grid search is O(n^d). Example: 4 lr × 4 sample_rate × 3 batch_size = 48 runs vs ~11 sequential runs
+2. **Practical Effectiveness:** Sequential often gets "good enough" results (maybe 98% of global optimum)
+3. **Domain Knowledge:** ML engineers know which params interact strongly (joint optimize) vs weakly (sequential optimize)
+4. **Diminishing Returns:** Global optimum may only improve by 0.5% but cost 5x compute
+
+**Alternatives:**
+- **Random Search:** Sample (lr, sample_rate) pairs randomly
+- **Bayesian Optimization:** Model hyperparameter response surface, recommend next trial
+- **Grid Search on Subsets:** Do 2D grid on strongly interacting params only
+- **User Education:** Warn about interaction risks without forcing an approach
+
+**DataVint Feature Idea (v2.0 - Not v1.0):**
+Don't prescribe optimization strategy, but **warn users** when detecting sequential patterns:
+
+```
+⚠️ Sequential Sweep Pattern Detected
+
+You're optimizing sample_rate with lr fixed at 0.005 (best from Sweep 1).
+
+Risk: The best lr may differ at different sample_rates due to parameter interaction.
+
+Suggestions:
+• Grid search: Test lr × sample_rate combinations (more expensive)
+• Random search: Sample parameter pairs randomly
+• Continue: Proceed with sequential optimization (faster, usually good enough)
+
+Learn more: [link to doc about hyperparameter interaction]
+```
+
+**Decision for v1.0:**
+- ✓ Keep mock data showing sequential pattern (realistic, common in practice)
+- ✓ Don't implement warning yet (need real user feedback first)
+- ✓ Document this as v2.0 consideration
+- ✓ Focus v1.0 on visualization and lineage tracking, not optimization advice
+- ⚠️ Don't make users feel DataVint is opinionated about "the right way" to tune
+
+**Challenge to This Concern:**
+User's intuition is correct about the risk, but:
+1. Most ML engineers already know this trade-off
+2. Sequential is industry standard for initial exploration
+3. Warning might be noise for experienced users
+4. Better to provide tools than prescribe methods
+
+**Status:** Documented for future consideration, not blocking v1.0
+
+**Files:**
+- `server/api/routes/experiments_mock.py` - Mock data shows sequential sweeps
+- Future: Sweep pattern detection logic
+
 ## Session Management
 
 - Using gstack `/context-save` and `/context-restore` for session continuity
