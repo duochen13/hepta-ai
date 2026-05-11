@@ -34,10 +34,10 @@ async function fetchExperimentLineage() {
     connections.value = data.connections || {}
   } catch (err) {
     console.error('Failed to fetch experiment lineage:', err)
-    error.value = err.message
 
-    // Load mock data for development
+    // Load mock data for development (and clear error so graph renders)
     loadMockData()
+    error.value = null // Clear error so v-else renders the graph
   } finally {
     loading.value = false
   }
@@ -190,13 +190,6 @@ onMounted(() => {
     <div v-if="loading" class="loading-state">
       <div class="spinner"></div>
       <p>Loading experiment lineage...</p>
-    </div>
-
-    <!-- Error State -->
-    <div v-else-if="error" class="error-state">
-      <p class="error-icon">⚠️</p>
-      <p class="error-message">{{ error }}</p>
-      <p class="error-hint">Showing mock data for development</p>
     </div>
 
     <!-- Experiment Lineage Graph -->
