@@ -1,6 +1,9 @@
 # Useful Commands & Tips
 
 
+## [2026-05-14] Run 'python3 examples/experiment_lineage_demo.py' to see XGBoost + Titanic example
+
+
 ## [2026-05-11] See .claude/MEMORY_SYSTEM_DEMO.md for comprehensive guide on using the memory system
 
 
