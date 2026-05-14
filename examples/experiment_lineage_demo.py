@@ -183,7 +183,7 @@ def main():
     print("\n2. Start the frontend (if not running):")
     print("   cd client && npm run dev")
     print("\n3. Open in browser:")
-    print("   http://localhost:5173/experiments/titanic_survival")
+    print("   http://localhost:5175/playground/titanic_survival")
     print("\n   You'll see:")
     print("   • Top: Data commits (D0, D1)")
     print("   • Bottom: Model runs (M0-M5) grouped by sweep")
