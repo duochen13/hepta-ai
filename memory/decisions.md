@@ -677,4 +677,121 @@ This exact experiment has been run 1 time(s) before:
 - 8 comprehensive tests covering all features
 - Integration with check command for actionable warnings
 
+## Bipartite Graph Frontend Integration (2026-05-13)
+
+**Decision Date**: 2026-05-13
+
+**Context**: Week 5-6 implemented CLI outcome tracking. The frontend already has a bipartite graph visualization for SDK experiments (data commits + model runs). Need to integrate CLI data into the same visualization.
+
+**Decision**: Create API bridge that reads CLI database and transforms data into bipartite graph format, with mode toggle in frontend.
+
+**Key Architectural Choices**:
+
+### 1. API Bridge Design
+**Decision**: New router `cli_experiments.py` with three endpoints:
+- `GET /api/cli-experiments/list` - List all fingerprints with outcomes
+- `GET /api/cli-experiments/{fingerprint}/lineage` - Bipartite graph data
+- `GET /api/cli-experiments/stats` - Aggregate statistics
+
+**Rationale**:
+- Separate router keeps CLI and SDK code decoupled
+- Transform data at API layer (not frontend)
+- Frontend expects specific format (dataCommits, modelRuns, connections)
+- Reuse existing LineageGraph component (no UI changes needed)
+
+### 2. Data Transformation Strategy
+**Decision**: Map CLI concepts to SDK visualization concepts:
+- CLI fingerprints → Data commits (D-{hash})
+- CLI experiment runs → Model runs (M-{hash}-{n})
+- Similar experiments → Additional data commits (shows train/test splits)
+- Connections map fingerprints to their runs
+
+**Example transformation**:
+```
+CLI: fingerprint "abc123..." with 2 runs
+  → Data commit: D-abc123, message="train.csv"
+  → Model run 1: M-abc1-1, status="✅ success", metrics={accuracy: 0.92}
+  → Model run 2: M-abc1-2, status="❌ failure", notes="OOM error"
+  → Connections: {"D-abc123": ["M-abc1-1", "M-abc1-2"]}
+```
+
+**Rationale**:
+- Same fingerprint = same data version (aligns with SDK concept)
+- Multiple runs on same fingerprint = hyperparameter tuning (aligns with SDK sweeps)
+- Similar experiments visualized as related data versions (shows data lineage)
+
+### 3. Similarity Integration
+**Decision**: Show top 3 similar experiments (90%+ threshold) as additional data commits
+**Implementation**:
+- Query `experiment_fingerprints` for features
+- Compute similarity using `datavint.similarity.compute_similarity`
+- Add similar fingerprints as separate data commits with similarity % in message
+- Show their latest run as model run
+
+**Rationale**:
+- Users can see train/test splits visualized (typically 99%+ similar)
+- Understand why CLI flagged an experiment as similar
+- Visual representation of near-duplicate detection
+- 90% threshold for visualization (looser than 95% CLI default)
+
+### 4. Metrics Formatting
+**Decision**: Transform JSON metrics to frontend format with quality indicators
+**Formula**:
+- Accuracy-like (higher = better): good if ≥0.90, ok if ≥0.75, bad otherwise
+- Loss-like (lower = better): good if ≤0.1, ok if ≤0.3, bad otherwise
+- Default: neutral quality
+
+**Rationale**:
+- Frontend expects `{metric: {value, quality}}` format
+- Quality determines color (green/orange/gray)
+- Heuristic covers common ML metrics
+- Extensible for custom metrics
+
+### 5. Frontend Mode Toggle
+**Decision**: Add mode selector in ExperimentView: "SDK Experiments" vs "CLI Experiments"
+**Implementation**:
+- Query parameter `?mode=cli` for direct links
+- Dropdown selector for CLI fingerprints
+- Conditional API fetch based on mode
+- Error states with helpful hints
+
+**Rationale**:
+- Single unified view for both data sources
+- No duplicate components needed
+- Preserves existing SDK functionality
+- Clear separation of concerns (SDK vs CLI tracking)
+
+### 6. Database Access
+**Decision**: API reads directly from `~/.datavint/experiments.db` (CLI database)
+**Rationale**:
+- No sync/migration needed
+- Real-time data (no stale cache)
+- CLI and API share single source of truth
+- Simple: no additional infrastructure
+
+**Limitation**:
+- API must run on same machine as CLI (localhost development)
+- Future: could add remote database option for team sync (Week 9 feature)
+
+**Implementation Files**:
+- `server/api/routes/cli_experiments.py` - API bridge (441 lines)
+- `server/api/main.py` - Router registration
+- `client/src/views/ExperimentView.vue` - Mode toggle UI
+
+**Integration Features**:
+- Visualize CLI experiments in bipartite graph
+- See multiple runs of same dataset
+- View similar experiments (train/test splits)
+- Cost and duration displayed in runs
+- Success/failure status with notes
+- Metrics with quality scoring
+- Query parameter support
+
+**Bipartite Graph Integration**: ✅ COMPLETE
+- CLI outcomes visible in frontend visualization
+- Mode toggle between SDK and CLI experiments
+- API bridge transforms CLI data to graph format
+- Similar experiments shown as related data commits
+- Status icons, metrics, and cost displayed
+
 **Next**: Week 7-8 will add fast path optimization (<5s checks via caching).
