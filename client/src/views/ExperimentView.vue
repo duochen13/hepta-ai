@@ -1,11 +1,12 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, onMounted, computed, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import DataCommitNode from '../components/DataCommitNode.vue'
 import ModelRunNode from '../components/ModelRunNode.vue'
 import LineageGraph from '../components/LineageGraph.vue'
 
 const route = useRoute()
+const router = useRouter()
 
 // Experiment data
 const experimentId = computed(() => route.params.experimentId || 'test_learning_rate_experiment')
@@ -15,13 +16,29 @@ const connections = ref({})
 const loading = ref(true)
 const error = ref(null)
 
+// Mode toggle: 'sdk' or 'cli'
+const mode = ref(route.query.mode || 'sdk')
+
+// CLI experiments list
+const cliExperiments = ref([])
+const selectedCliFingerprint = ref(null)
+
 // Fetch experiment lineage from API
 async function fetchExperimentLineage() {
   loading.value = true
   error.value = null
 
   try {
-    const response = await fetch(`/api/experiments/${experimentId.value}/lineage`)
+    let response
+
+    if (mode.value === 'cli') {
+      // Fetch CLI experiment lineage
+      const fingerprint = selectedCliFingerprint.value || experimentId.value
+      response = await fetch(`/api/cli-experiments/${fingerprint}/lineage`)
+    } else {
+      // Fetch SDK experiment lineage
+      response = await fetch(`/api/experiments/${experimentId.value}/lineage`)
+    }
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`)
@@ -36,12 +53,53 @@ async function fetchExperimentLineage() {
     console.error('Failed to fetch experiment lineage:', err)
 
     // Load mock data for development (and clear error so graph renders)
-    loadMockData()
-    error.value = null // Clear error so v-else renders the graph
+    if (mode.value === 'sdk') {
+      loadMockData()
+      error.value = null // Clear error so v-else renders the graph
+    } else {
+      error.value = `Failed to fetch CLI experiments. Make sure you have run 'datavint check' first.`
+    }
   } finally {
     loading.value = false
   }
 }
+
+// Fetch CLI experiments list
+async function fetchCliExperiments() {
+  try {
+    const response = await fetch('/api/cli-experiments/list?limit=20')
+    if (response.ok) {
+      const data = await response.json()
+      cliExperiments.value = data.experiments || []
+
+      // Select first experiment if none selected
+      if (cliExperiments.value.length > 0 && !selectedCliFingerprint.value) {
+        selectedCliFingerprint.value = cliExperiments.value[0].fingerprint
+      }
+    }
+  } catch (err) {
+    console.error('Failed to fetch CLI experiments list:', err)
+  }
+}
+
+// Toggle mode
+function toggleMode(newMode) {
+  mode.value = newMode
+  router.push({ query: { ...route.query, mode: newMode } })
+
+  if (newMode === 'cli') {
+    fetchCliExperiments().then(() => fetchExperimentLineage())
+  } else {
+    fetchExperimentLineage()
+  }
+}
+
+// Watch for selected CLI experiment changes
+watch(selectedCliFingerprint, () => {
+  if (mode.value === 'cli') {
+    fetchExperimentLineage()
+  }
+})
 
 // Mock data for development (based on dashboard mockup)
 // Winner Selection Logic:
@@ -185,16 +243,69 @@ const modelRunsBySweep = computed(() => {
 })
 
 onMounted(() => {
-  fetchExperimentLineage()
+  if (mode.value === 'cli') {
+    fetchCliExperiments().then(() => fetchExperimentLineage())
+  } else {
+    fetchExperimentLineage()
+  }
 })
 </script>
 
 <template>
   <div class="experiment-view">
+    <!-- Mode Toggle Header -->
+    <div class="mode-toggle-header">
+      <div class="mode-buttons">
+        <button
+          class="mode-btn"
+          :class="{ active: mode === 'sdk' }"
+          @click="toggleMode('sdk')"
+        >
+          📦 SDK Experiments
+        </button>
+        <button
+          class="mode-btn"
+          :class="{ active: mode === 'cli' }"
+          @click="toggleMode('cli')"
+        >
+          💻 CLI Experiments
+        </button>
+      </div>
+
+      <!-- CLI Experiment Selector -->
+      <div v-if="mode === 'cli' && cliExperiments.length > 0" class="cli-selector">
+        <label for="cli-experiment-select">Select Experiment:</label>
+        <select
+          id="cli-experiment-select"
+          v-model="selectedCliFingerprint"
+          class="cli-select"
+        >
+          <option
+            v-for="exp in cliExperiments"
+            :key="exp.fingerprint"
+            :value="exp.fingerprint"
+          >
+            {{ exp.fingerprint.substring(0, 8) }} - {{ exp.datasetPath.split('/').pop() }}
+            ({{ exp.rowCount.toLocaleString() }} rows)
+            {{ exp.outcome ? ` - ${exp.outcome.status}` : '' }}
+          </option>
+        </select>
+      </div>
+    </div>
+
     <!-- Loading State -->
     <div v-if="loading" class="loading-state">
       <div class="spinner"></div>
       <p>Loading experiment lineage...</p>
+    </div>
+
+    <!-- Error State -->
+    <div v-else-if="error" class="error-state">
+      <div class="error-icon">⚠️</div>
+      <p>{{ error }}</p>
+      <p v-if="mode === 'cli'" class="error-hint">
+        Run <code>datavint check your_dataset.csv</code> to create CLI experiments.
+      </p>
     </div>
 
     <!-- Experiment Lineage Graph -->
@@ -223,6 +334,75 @@ onMounted(() => {
   overflow: auto;
   background: var(--bg-primary);
   padding: 32px;
+}
+
+/* Mode Toggle Header */
+.mode-toggle-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: var(--bg-panel);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.mode-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.mode-btn {
+  padding: 10px 20px;
+  background: transparent;
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mode-btn:hover {
+  border-color: var(--accent-cyan);
+  color: var(--text-primary);
+}
+
+.mode-btn.active {
+  background: var(--accent-cyan);
+  border-color: var(--accent-cyan);
+  color: white;
+}
+
+.cli-selector {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cli-selector label {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.cli-select {
+  padding: 8px 16px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: var(--font-mono);
+  min-width: 400px;
+  cursor: pointer;
+}
+
+.cli-select:focus {
+  outline: none;
+  border-color: var(--accent-cyan);
 }
 
 /* Loading State */
@@ -263,6 +443,23 @@ onMounted(() => {
 .error-icon {
   font-size: 48px;
   margin: 0;
+}
+
+.error-hint {
+  margin-top: 16px;
+  padding: 12px 24px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.error-hint code {
+  font-family: var(--font-mono);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: var(--accent-cyan);
 }
 
 .error-message {
