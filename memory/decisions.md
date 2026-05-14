@@ -1,5 +1,126 @@
 # Architectural Decisions
 
+## [2026-05-14] Horizontal Graph Layout with Consistent Purple Borders
+
+**Decision Date**: 2026-05-14
+
+**Context**: User feedback on bipartite graph visualization requested:
+1. Equal sizing between data commits and model runs
+2. Consistent border styling across all nodes
+3. Metrics hidden by default to reduce clutter
+4. Removal of "best model" highlighting
+
+**Decision**: Redesigned graph with horizontal data evolution and unified purple borders.
+
+**Key Changes**:
+
+### 1. Fixed Node Dimensions
+**Decision**: All nodes (data commits and model runs) are 280px × 120px
+**Rationale**:
+- Visual consistency prevents confusion about node importance
+- Easier to scan horizontally when all nodes align
+- Fixed height prevents layout shifting when metrics appear/disappear
+- `box-sizing: border-box` ensures padding doesn't affect dimensions
+- `overflow: hidden` prevents content from breaking layout
+
+### 2. Unified Purple Borders
+**Decision**: `3px solid rgba(139, 92, 246, 0.3)` for all nodes (data commits and model runs)
+**Previous**: Different colors - purple for data commits, green for model runs
+**Rationale**:
+- Emphasizes graph structure over node type
+- Purple is DataVint's brand color
+- Thicker border (3px) makes nodes more prominent
+- 30% opacity prevents overwhelming the content
+- On hover: increases to 60% opacity for feedback
+
+**Why Not Green for Models?**
+- Green previously suggested "success" but not all model runs succeed
+- Creates hierarchy that doesn't reflect actual importance
+- Confusing when both types are equally important in lineage
+
+### 3. Hover-Based Metrics Display
+**Decision**: Hide metrics grid by default, show on hover
+**Implementation**:
+```css
+.metrics { display: none; }
+.model-node:hover .metrics { display: grid; }
+```
+**Rationale**:
+- Reduces visual clutter (default view shows only hyperparameters)
+- Preserves information access (hover to reveal)
+- User can scan many model runs quickly (not distracted by metrics)
+- Metrics become "details on demand" not "always visible"
+
+**User Workflow**:
+1. Scan model runs to see hyperparameter variations
+2. Hover on interesting config to see performance metrics
+3. Compare metrics sequentially by hovering
+
+### 4. Removed Best Model Highlighting
+**Decision**: No special borders, badges, or colors for "best" model runs
+**Previous**: Green border, "BEST" badge, orange for sweep winners
+**Rationale**:
+- Treats all experiments equally (exploratory mindset)
+- Avoids creating artificial hierarchy
+- "Best" is subjective (best NE ≠ best CTR ≠ best coverage)
+- Users can identify winners from metrics themselves
+- Cleaner, more professional appearance
+
+**Why This Matters**:
+- DataVint is about lineage tracking, not winner selection
+- Users already know which model is best (they have MLflow for that)
+- Highlighting creates bias (what if "best" depends on business context?)
+
+### 5. Single Vertical Connection Line
+**Decision**: One purple line from each data commit straight down to first model run
+**Previous**: Individual lines to each connected model run (3 lines from D0 → M0/M1/M2)
+**Rationale**:
+- Reduces visual clutter (1 line vs N lines)
+- Still shows connection (line extends to first model run area)
+- Cleaner appearance aligns with simplified design
+- Indicates "these models use this data" without drawing every link
+
+**Implementation**:
+```javascript
+// Instead of: loop through all connected models, draw line to each
+// Do: draw single line from data commit to first model run top
+const firstModelTop = getNodePosition(connectedRuns[0], 'top')
+lines.push({
+  x1: dataBottom.x,
+  y1: dataBottom.y,
+  x2: dataBottom.x,  // Same x (vertical)
+  y2: firstModelTop.y
+})
+```
+
+### Design Philosophy Shift
+
+**Before**: Graph communicates "which model won"
+- Green borders highlight best runs
+- Badges show sweep winners
+- Metrics always visible
+- Color-coded quality indicators
+
+**After**: Graph communicates "experiment flow"
+- All nodes equal visual weight
+- Emphasizes timeline (data evolution, then models)
+- Details on demand (hover to reveal)
+- Consistent styling reduces cognitive load
+
+**Files Changed**:
+- `client/src/components/DataCommitNode.vue` - Fixed sizing, purple borders
+- `client/src/components/ModelRunNode.vue` - Fixed sizing, purple borders, hover metrics, removed badges
+- `client/src/components/LineageGraphHorizontal.vue` - Single vertical connection lines
+
+**User Feedback Incorporated**:
+- "D0 and M0 size should be equal" → Fixed 280×120 dimensions
+- "Make borders consistent, light purple" → Unified 3px purple borders
+- "Only show hyperparameters, metrics on hover" → Hover-based metrics
+- "Don't highlight best model" → Removed badges and special styling
+- "Only 1 purple line from D0" → Single vertical connection per data commit
+
+**Status**: ✅ IMPLEMENTED (2026-05-14)
+
 ## [2026-05-11] Sequential Hyperparameter Tuning: Local Optima Risk (Future Consideration)
 
 **Observation:** Mock data shows sequential sweeps (Sweep 1: lr → pick best → Sweep 2: sample_rate with fixed lr). This pattern can miss global optimum.

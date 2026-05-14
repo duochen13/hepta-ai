@@ -1,5 +1,103 @@
 # Coding Patterns
 
+## [2026-05-14] Horizontal Lineage Graph Layout Pattern
+
+**Pattern:** Horizontal timeline layout for experiment lineage with data evolution (left→right) and model runs (top→down per data commit).
+
+**Implementation:**
+```vue
+<!-- Data Evolution: Horizontal timeline -->
+<div class="data-timeline">
+  <DataCommitNode v-for="commit in dataCommits" :commit="commit" />
+</div>
+
+<!-- Model Runs: Vertical columns aligned under each data commit -->
+<div class="model-columns">
+  <div v-for="commit in dataCommits" class="model-column">
+    <ModelRunNode v-for="run in modelRunsByDataCommit[commit.id]" :run="run" />
+  </div>
+</div>
+```
+
+**Visual Design:**
+- Fixed node dimensions: 280px × 120px for consistent sizing
+- Unified borders: 3px solid rgba(139, 92, 246, 0.3) for all nodes
+- Backdrop blur: `backdrop-filter: blur(8px)` for glass-morphism
+- Vertical connection lines: Single purple line from each data commit straight down
+
+**SVG Connection Pattern:**
+```javascript
+// Single vertical line per data commit (not individual lines to each model)
+const dataBottom = getNodePosition(dataId, 'bottom')
+const firstModelTop = getNodePosition(firstModelId, 'top')
+
+lines.push({
+  x1: dataBottom.x,
+  y1: dataBottom.y,
+  x2: dataBottom.x,  // Same x (vertical line)
+  y2: firstModelTop.y,
+  type: 'connection'
+})
+```
+
+**Why This Layout:**
+- Natural reading flow: time flows left→right
+- Logical grouping: models grouped under their training data
+- Space-efficient: accommodates many model runs vertically
+- Clear connections: single line per data commit reduces visual clutter
+
+**Files:**
+- `client/src/components/LineageGraphHorizontal.vue` (layout)
+- `client/src/components/DataCommitNode.vue` (280×120 purple border)
+- `client/src/components/ModelRunNode.vue` (280×120 purple border)
+
+## [2026-05-14] Hover-Based Metrics Display Pattern
+
+**Pattern:** Hide detailed metrics by default, show on hover to reduce visual clutter while keeping information accessible.
+
+**Implementation:**
+```vue
+<template>
+  <div class="model-node">
+    <div class="node-header">{{ run.id }}</div>
+    <div class="node-message">{{ run.message }}</div>
+
+    <!-- Metrics: hidden by default -->
+    <div class="metrics">
+      <div v-for="(metric, key) in run.metrics" class="metric">
+        {{ key }}: {{ metric.value }}
+      </div>
+    </div>
+  </div>
+</template>
+
+<style>
+.metrics {
+  display: none;  /* Hidden by default */
+}
+.model-node:hover .metrics {
+  display: grid;  /* Show on hover */
+}
+</style>
+```
+
+**Design Rationale:**
+- **Default view:** Shows only hyperparameters (lr, depth, etc.) for quick scanning
+- **Hover view:** Reveals performance metrics (accuracy, f1-score) for detailed inspection
+- **No special highlighting:** Removed "BEST" badges to treat all runs equally
+- **Consistent styling:** All metrics use same color (no quality-based coloring)
+
+**User Experience:**
+1. User scans model runs to see different hyperparameter configurations
+2. User hovers on interesting config to see its performance metrics
+3. User compares metrics across runs by hovering sequentially
+
+**Why This Works:**
+- Reduces cognitive load (less info to process initially)
+- Preserves information access (hover to reveal)
+- Emphasizes experiment structure over individual metrics
+- Cleaner, more professional appearance
+
 
 ## [2026-05-11] Pre-push hook enforces memory updates before pushing to main
 
