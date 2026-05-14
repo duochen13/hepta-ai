@@ -1,6 +1,9 @@
 # Useful Commands & Tips
 
 
+## [2026-05-14] Use kagglehub to download real datasets: kagglehub.dataset_download('arashnic/book-recommendation-dataset')
+
+
 ## [2026-05-14] Run 'python3 examples/experiment_lineage_demo.py' to see XGBoost + Titanic example
 
 
