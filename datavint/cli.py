@@ -19,10 +19,18 @@ import json
 import sqlite3
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List, Tuple, Dict
 
 import click
 import pandas as pd
+
+from datavint.similarity import (
+    extract_features,
+    compute_similarity,
+    find_similar_experiments,
+    compute_column_overlap,
+    compute_shape_similarity
+)
 
 
 # Database path
@@ -46,11 +54,21 @@ def _ensure_db_exists(db_path: Path):
             row_count INTEGER,
             column_count INTEGER,
             columns TEXT,
+            features TEXT,
             first_seen TEXT NOT NULL,
             last_seen TEXT NOT NULL,
             run_count INTEGER DEFAULT 1
         )
     """)
+
+    # Add features column if it doesn't exist (for migration from Week 1 schema)
+    cursor.execute("PRAGMA table_info(experiment_fingerprints)")
+    columns = [col[1] for col in cursor.fetchall()]
+    if 'features' not in columns:
+        cursor.execute("""
+            ALTER TABLE experiment_fingerprints
+            ADD COLUMN features TEXT
+        """)
 
     # Experiment runs table (for tracking individual runs)
     cursor.execute("""
@@ -143,19 +161,24 @@ def _check_duplicate(
     fingerprint: str,
     dataset_path: str,
     df: pd.DataFrame,
-    db_path: Path
-) -> Optional[dict]:
+    features: dict,
+    db_path: Path,
+    similarity_threshold: float = 0.95
+) -> Tuple[Optional[dict], List[Tuple[dict, float]]]:
     """
     Check if experiment fingerprint already exists in database.
+    Also find near-duplicates (similar experiments).
 
     Args:
         fingerprint: Dataset fingerprint hash
         dataset_path: Path to dataset file
         df: Loaded dataset
+        features: Extracted features from dataset
         db_path: Path to SQLite database
+        similarity_threshold: Minimum similarity for near-duplicates (default: 0.95)
 
     Returns:
-        Dictionary with duplicate info if found, None otherwise
+        Tuple of (exact_duplicate_dict or None, list of (similar_experiment_dict, similarity_score))
     """
     conn = sqlite3.connect(str(db_path))
     cursor = conn.cursor()
@@ -174,31 +197,80 @@ def _check_duplicate(
         WHERE fingerprint = ?
     """, (fingerprint,))
 
-    result = cursor.fetchone()
-    conn.close()
-
-    if result:
-        return {
-            'id': result[0],
-            'dataset_path': result[1],
-            'row_count': result[2],
-            'column_count': result[3],
-            'first_seen': result[4],
-            'last_seen': result[5],
-            'run_count': result[6]
+    exact_result = cursor.fetchone()
+    exact_duplicate = None
+    if exact_result:
+        exact_duplicate = {
+            'id': exact_result[0],
+            'dataset_path': exact_result[1],
+            'row_count': exact_result[2],
+            'column_count': exact_result[3],
+            'first_seen': exact_result[4],
+            'last_seen': exact_result[5],
+            'run_count': exact_result[6]
         }
 
-    return None
+    # Find similar experiments (near-duplicates)
+    similar_experiments = []
+
+    # Get all other experiments with features
+    cursor.execute("""
+        SELECT
+            id,
+            fingerprint,
+            dataset_path,
+            row_count,
+            column_count,
+            first_seen,
+            last_seen,
+            run_count,
+            features
+        FROM experiment_fingerprints
+        WHERE fingerprint != ? AND features IS NOT NULL
+    """, (fingerprint,))
+
+    candidates = cursor.fetchall()
+    conn.close()
+
+    # Compute similarity for each candidate
+    for candidate in candidates:
+        try:
+            candidate_features = json.loads(candidate[8])  # features column
+            similarity = compute_similarity(features, candidate_features)
+
+            if similarity >= similarity_threshold:
+                similar_experiments.append((
+                    {
+                        'id': candidate[0],
+                        'fingerprint': candidate[1],
+                        'dataset_path': candidate[2],
+                        'row_count': candidate[3],
+                        'column_count': candidate[4],
+                        'first_seen': candidate[5],
+                        'last_seen': candidate[6],
+                        'run_count': candidate[7]
+                    },
+                    similarity
+                ))
+        except (json.JSONDecodeError, Exception):
+            # Skip experiments with invalid features
+            continue
+
+    # Sort by similarity (descending)
+    similar_experiments.sort(key=lambda x: x[1], reverse=True)
+
+    return exact_duplicate, similar_experiments
 
 
 def _store_fingerprint(
     fingerprint: str,
     dataset_path: str,
     df: pd.DataFrame,
+    features: dict,
     db_path: Path
 ):
     """
-    Store experiment fingerprint in database.
+    Store experiment fingerprint and features in database.
 
     If fingerprint already exists, update last_seen and increment run_count.
     """
@@ -219,9 +291,9 @@ def _store_fingerprint(
         fingerprint_id, run_count = existing
         cursor.execute("""
             UPDATE experiment_fingerprints
-            SET last_seen = ?, run_count = ?, dataset_path = ?
+            SET last_seen = ?, run_count = ?, dataset_path = ?, features = ?
             WHERE id = ?
-        """, (now, run_count + 1, dataset_path, fingerprint_id))
+        """, (now, run_count + 1, dataset_path, json.dumps(features), fingerprint_id))
     else:
         # Insert new fingerprint
         dataset_size_mb = Path(dataset_path).stat().st_size / (1024 * 1024)
@@ -229,8 +301,8 @@ def _store_fingerprint(
         cursor.execute("""
             INSERT INTO experiment_fingerprints
             (fingerprint, dataset_path, dataset_size_mb, row_count, column_count,
-             columns, first_seen, last_seen, run_count)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+             columns, features, first_seen, last_seen, run_count)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             fingerprint,
             dataset_path,
@@ -238,6 +310,7 @@ def _store_fingerprint(
             len(df),
             len(df.columns),
             json.dumps(list(df.columns)),
+            json.dumps(features),
             now,
             now,
             1
@@ -280,20 +353,26 @@ def main():
     default=0.001,
     help='Fraction of dataset to sample for fingerprinting (default: 0.001 = 0.1%)'
 )
-def check(dataset_path: str, db_path: str, sampling_rate: float):
+@click.option(
+    '--similarity',
+    type=float,
+    default=0.95,
+    help='Similarity threshold for near-duplicates (default: 0.95 = 95%%)'
+)
+def check(dataset_path: str, db_path: str, sampling_rate: float, similarity: float):
     """
-    Check for duplicate experiments before launching.
+    Check for duplicate and near-duplicate experiments before launching.
 
     Computes dataset fingerprint and checks if this exact experiment
-    has been run before. Warns if duplicate is found.
+    has been run before. Also finds similar experiments (near-duplicates).
 
     Example:
         $ datavint check data/train.csv
-        $ datavint check data/features.parquet
+        $ datavint check data/features.parquet --similarity 0.98
 
     Exit codes:
         0 - No duplicate found (safe to proceed)
-        1 - Duplicate found (warning issued)
+        1 - Duplicate or similar experiment found (warning issued)
         2 - Error occurred
     """
     try:
@@ -307,41 +386,74 @@ def check(dataset_path: str, db_path: str, sampling_rate: float):
         df = _load_dataset(dataset_path)
         click.echo(f"   Dataset: {len(df):,} rows × {len(df.columns)} columns")
 
+        # Extract features for similarity comparison
+        click.echo(f"   Extracting features...")
+        features = extract_features(df)
+
         # Compute fingerprint
         click.echo(f"   Computing fingerprint (sampling {sampling_rate * 100}% of data)...")
         fingerprint = _compute_dataset_fingerprint(df, sampling_rate)
         click.echo(f"   Fingerprint: {fingerprint}")
 
-        # Check for duplicates
-        click.echo(f"   Checking for duplicates...")
-        duplicate = _check_duplicate(fingerprint, dataset_path, df, db_path_obj)
+        # Check for duplicates and similar experiments
+        click.echo(f"   Checking for duplicates and similar experiments (threshold: {similarity * 100}%)...")
+        exact_duplicate, similar_experiments = _check_duplicate(
+            fingerprint, dataset_path, df, features, db_path_obj, similarity
+        )
 
-        if duplicate:
-            # Duplicate found!
-            click.secho("\n⚠️  DUPLICATE EXPERIMENT DETECTED", fg='yellow', bold=True)
-            click.echo(f"\nThis exact experiment has been run {duplicate['run_count']} time(s) before:\n")
-            click.echo(f"  First run:    {duplicate['first_seen']}")
-            click.echo(f"  Last run:     {duplicate['last_seen']}")
-            click.echo(f"  Dataset path: {duplicate['dataset_path']}")
-            click.echo(f"  Dataset size: {duplicate['row_count']:,} rows × {duplicate['column_count']} columns")
+        # Display results
+        found_issue = False
+
+        if exact_duplicate:
+            # Exact duplicate found!
+            click.secho("\n⚠️  EXACT DUPLICATE DETECTED", fg='yellow', bold=True)
+            click.echo(f"\nThis exact experiment has been run {exact_duplicate['run_count']} time(s) before:\n")
+            click.echo(f"  First run:    {exact_duplicate['first_seen']}")
+            click.echo(f"  Last run:     {exact_duplicate['last_seen']}")
+            click.echo(f"  Dataset path: {exact_duplicate['dataset_path']}")
+            click.echo(f"  Dataset size: {exact_duplicate['row_count']:,} rows × {exact_duplicate['column_count']} columns")
             click.echo(f"\n💡 Consider skipping this run to save GPU costs.")
+            found_issue = True
 
-            # Store this check
-            _store_fingerprint(fingerprint, dataset_path, df, db_path_obj)
+        if similar_experiments:
+            # Similar experiments found!
+            if not exact_duplicate:
+                click.secho("\n⚠️  SIMILAR EXPERIMENTS FOUND", fg='yellow', bold=True)
+            else:
+                click.echo()
+                click.secho("⚠️  SIMILAR EXPERIMENTS ALSO FOUND", fg='yellow', bold=True)
 
-            # Exit with code 1 (warning)
-            raise SystemExit(1)
-        else:
-            # No duplicate found
-            click.secho("\n✅ NO DUPLICATE FOUND", fg='green', bold=True)
+            click.echo(f"\nFound {len(similar_experiments)} similar experiment(s):\n")
+
+            for i, (exp, sim_score) in enumerate(similar_experiments[:3], 1):  # Show top 3
+                click.echo(f"  {i}. Similarity: {sim_score * 100:.1f}%")
+                click.echo(f"     Fingerprint: {exp['fingerprint']}")
+                click.echo(f"     Dataset:     {exp['dataset_path']}")
+                click.echo(f"     Size:        {exp['row_count']:,} rows × {exp['column_count']} columns")
+                click.echo(f"     Last run:    {exp['last_seen']}")
+                click.echo()
+
+            if len(similar_experiments) > 3:
+                click.echo(f"  ... and {len(similar_experiments) - 3} more similar experiment(s)")
+                click.echo()
+
+            click.echo("💡 These similar experiments may indicate duplicate work.")
+            found_issue = True
+
+        if not found_issue:
+            # No duplicate or similar experiments found
+            click.secho("\n✅ NO DUPLICATES FOUND", fg='green', bold=True)
             click.echo(f"\nThis is a new experiment configuration.")
             click.echo(f"Safe to proceed with training.\n")
 
-            # Store fingerprint for future checks
-            _store_fingerprint(fingerprint, dataset_path, df, db_path_obj)
+        # Store fingerprint and features for future checks
+        _store_fingerprint(fingerprint, dataset_path, df, features, db_path_obj)
 
-            # Exit with code 0 (success)
-            raise SystemExit(0)
+        # Exit with appropriate code
+        if found_issue:
+            raise SystemExit(1)  # Warning
+        else:
+            raise SystemExit(0)  # Success
 
     except click.ClickException:
         raise
