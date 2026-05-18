@@ -8,7 +8,7 @@
 
 ## What Was Approved
 
-**DataVint v2: ML Execution Waste Control Layer (Expanded)**
+**NanoML v2: ML Execution Waste Control Layer (Expanded)**
 
 ### Core Product
 Pre-execution CLI gate that prevents duplicate ML experiments before GPU allocation
@@ -32,7 +32,7 @@ Pre-execution CLI gate that prevents duplicate ML experiments before GPU allocat
    - Makes ROI visible in month 1
 
 4. **Optional Team Sync** (Week 9) ⭐ NEW
-   - `datavint init --team` enables cloud backend
+   - `nanoml init --team` enables cloud backend
    - Team collaboration without complex backend
 
 5. **Fast Path** (Week 7-8) ⭐ NEW
@@ -57,7 +57,7 @@ Call your committed customer and ask:
 
 > "I'm shipping in 10 weeks (late July 2026). It'll check for duplicates AND near-duplicates, show estimated GPU cost, and warn if similar experiments failed before.
 >
-> **Pricing will be $1-3K/month. If DataVint saves you $10K in the first 3 months, would you pay for it?**"
+> **Pricing will be $1-3K/month. If NanoML saves you $10K in the first 3 months, would you pay for it?**"
 
 **Get two things**:
 1. ✅ Calendar invite for Week 11 kickoff call (late July)
@@ -75,10 +75,10 @@ Begin building this week:
 - [ ] CLI framework (Click or Typer)
 - [ ] Dataset fingerprinting (sampling-based)
 - [ ] Local SQLite storage
-- [ ] `datavint check <dataset>` command
-- [ ] `datavint history` command
+- [ ] `nanoml check <dataset>` command
+- [ ] `nanoml history` command
 
-**Success metric**: Working `datavint check` by end of Week 1
+**Success metric**: Working `nanoml check` by end of Week 1
 
 ---
 
@@ -97,7 +97,7 @@ Begin building this week:
 
 ### Week 10 (Launch)
 - 50 PyPI downloads in first week
-- 10 users run `datavint check` at least once
+- 10 users run `nanoml check` at least once
 - 3 users active (5+ checks)
 - 1 user configures GPU pricing (activation metric)
 
@@ -135,7 +135,7 @@ Begin building this week:
 
 ## Files Updated
 
-1. ✅ **`wiki/changelog/2026-05-13-datavint-gpu-waste-control-design-v2-expanded.md`**
+1. ✅ **`wiki/changelog/2026-05-13-nanoml-gpu-waste-control-design-v2-expanded.md`**
    - Full expanded design (APPROVED)
    - 10-week implementation plan
    - Revised success criteria
@@ -198,11 +198,11 @@ Begin building this week:
 ## Questions?
 
 For full details, see:
-- **Full design**: `wiki/changelog/2026-05-13-datavint-gpu-waste-control-design-v2-expanded.md`
+- **Full design**: `wiki/changelog/2026-05-13-nanoml-gpu-waste-control-design-v2-expanded.md`
 - **CEO review**: `wiki/changelog/2026-05-13-ceo-review-summary.md`
 - **Decisions log**: `memory/decisions.md`
 - **Quick ref**: `CLAUDE.md`
 
 ---
 
-**Ready to start building? Your first milestone is Week 1: working `datavint check` command.**
+**Ready to start building? Your first milestone is Week 1: working `nanoml check` command.**

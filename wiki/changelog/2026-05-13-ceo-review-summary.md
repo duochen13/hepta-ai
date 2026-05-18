@@ -1,4 +1,4 @@
-# CEO Review Summary: DataVint GPU Waste Control
+# CEO Review Summary: NanoML GPU Waste Control
 
 **Date**: 2026-05-13
 **Reviewer**: /plan-ceo-review (CEO-mode agent)
@@ -108,7 +108,7 @@
 
 ### Action 1: Validate pricing (NEW)
 Go back to committed customer and validate:
-- "Pricing will be $1-3K/month. If DataVint saves you $10K in 3 months, would you pay?"
+- "Pricing will be $1-3K/month. If NanoML saves you $10K in 3 months, would you pay?"
 - Get pricing objection or confirmation
 - Schedule Week 11 kickoff call
 
@@ -130,7 +130,7 @@ Begin Week 1 implementation:
 
 **Leading indicators** (not in v1):
 - 50 PyPI downloads in first week
-- 10 users run `datavint check` at least once
+- 10 users run `nanoml check` at least once
 - 3 users active (5+ checks)
 - 1 user configures GPU pricing (activation)
 
@@ -199,7 +199,7 @@ Begin Week 1 implementation:
 
 **CEO challenge**: Validate willingness to pay BEFORE building
 
-**Revised assignment**: Ask "If DataVint saves you $10K in 3 months, would you pay $1-3K/month?"
+**Revised assignment**: Ask "If NanoML saves you $10K in 3 months, would you pay $1-3K/month?"
 
 ---
 
@@ -228,7 +228,7 @@ Begin Week 1 implementation:
 
 ## Next Steps
 
-1. ✅ **Design v2 created**: `/wiki/changelog/2026-05-13-datavint-gpu-waste-control-design-v2-expanded.md`
+1. ✅ **Design v2 created**: `/wiki/changelog/2026-05-13-nanoml-gpu-waste-control-design-v2-expanded.md`
 2. ⏳ **Validate pricing**: Call committed customer, ask pricing question
 3. ⏳ **Start Week 1**: CLI framework + fingerprinting
 4. ⏳ **Schedule kickoff**: Get Week 11 calendar invite
@@ -238,5 +238,5 @@ Begin Week 1 implementation:
 
 ## Files Created
 
-- `wiki/changelog/2026-05-13-datavint-gpu-waste-control-design-v2-expanded.md` - Full expanded design
+- `wiki/changelog/2026-05-13-nanoml-gpu-waste-control-design-v2-expanded.md` - Full expanded design
 - `wiki/changelog/2026-05-13-ceo-review-summary.md` - This summary document

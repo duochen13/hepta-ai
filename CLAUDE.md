@@ -1,4 +1,4 @@
-# DataVint Project Instructions
+# NanoML Project Instructions
 
 ## Wiki Documentation
 
@@ -174,136 +174,154 @@ Key routing rules:
 
 # Product Design Document
 
-## ✅ ACTIVE DESIGN: DataVint - ML Execution Waste Control Layer (v2)
+## 🚧 DRAFT DESIGN: NanoML - ML Training Observability & Root-Cause Analysis (v3)
 
-**Generated**: /plan-ceo-review on 2026-05-13
+**Generated**: 2026-05-17
 **Branch**: main
-**Status**: APPROVED ✅
-**Mode**: Startup - SELECTIVE EXPANSION
-**Last Updated**: 2026-05-13
-**Full Design**: `wiki/changelog/2026-05-13-datavint-gpu-waste-control-design-v2-expanded.md`
+**Status**: DRAFT - Requires customer validation
+**Mode**: Major Pivot - From GPU waste control to observability
+**Last Updated**: 2026-05-17
+**Full Design**: `wiki/changelog/2026-05-17-nanoml-ml-observability-design-v3.md`
 
-### Executive Summary
+### Executive Summary (100-word version)
 
-**Product**: Pre-execution CLI gate that prevents duplicate ML experiments before GPU allocation
+When production ML accuracy drops 0.3%, teams waste days asking why. The problem: dual fragmentation. Teams work in silos (data engineers vs ML engineers), and infrastructure is scattered (MLflow, Feast, validators)—any shift breaks models downstream. We're building observability for ML training systems that answers "which data change caused this production regression?" Not another ML platform—an intelligence layer above fragmented infra, tracing user outcome shifts to root-cause training data. Like Datadog for ML decisions, not metrics. Critical as agent-driven workflows amplify cascading failures across fragmented components.
 
-**Timeline**: 10 weeks (1 engineer, expanded from 8 weeks for 2.3x higher success probability)
+### The Problem: Two-Dimensional Fragmentation
 
-**Problem**: ML teams waste 20-30% of GPU training budget on duplicate experiments and preventable failures. Engineers running 20+ experiments lose track of what they already tried and accidentally rerun similar configurations, wasting thousands of dollars on redundant compute.
+**1. Team Fragmentation**
+- Data engineers optimize for pipeline throughput
+- ML engineers optimize for model accuracy
+- Each team has conflicting goals, different tools, no shared visibility
 
-**Solution**: CLI tool (`datavint check`) that queries experiment database, blocks exact duplicates, warns on near-duplicates (95%+ similar), shows estimated cost, and displays outcomes from similar past experiments.
+**2. Infrastructure Fragmentation**
+- MLflow for experiments
+- Feast for features
+- Custom validators for data quality
+- Separate systems for each concern
+- Any component shift breaks models downstream
 
-**Target Customer**: ML Team Lead at resource-constrained ML startup
-- Company stage: ML-focused startup to Series B/C ($20K-$500K/month GPU spend)
-- Team size: 5-20 person ML team
-- Pain: Hitting GPU quota limits, forced to downsample data
-- Has budget authority to buy tools that save GPU costs
+**The Cost**: When production accuracy drops, engineers spend 2-5 days on root-cause analysis, wasting 20-30% of engineering time on ML archaeology.
 
-**Value Prop**: "Stop wasting 1 in 4 training slots on duplicates when you're already running out of capacity"
+### The Solution
+
+**Product**: Intelligence layer above fragmented ML infrastructure that traces production outcome shifts back to root-cause training data changes.
+
+**Core Value**: "Which training data change caused which production outcome shift?"
+
+**Positioning**:
+- NOT another ML platform
+- NOT another experiment tracker
+- NOT another data quality tool
+- **We are**: "Datadog for ML decisions, not ML metrics"
+
+### Target Customer
+
+**ML Team Lead** at ML-focused company (Series A-C)
+- Team: 10-50 engineers (data + ML + platform)
+- Pain: Spending 20-30% of time debugging production regressions
+- Existing stack: MLflow/W&B, Airflow, cloud data warehouse
+- Willingness to pay: $5K-$20K/month to save senior engineering time
+
+### Value Proposition
+
+"Stop wasting senior engineering time on ML archaeology. Get root-cause answers in minutes, not days."
 
 **Economics**:
-- Customer segment: ML-focused startups ($20K-$150K/month GPU spend)
-- Conservative estimate: $50K/month on GPU training
-- 20-30% waste = $10K-$15K/month = $120K-$180K/year wasted
-- Potential pricing: 10-20% of savings = $1K-$3K/month per customer
+- Current cost: 2-5 days × senior ML engineer ($150K-$250K) = $1,200-$5,000 per incident
+- 10-20 incidents/year = $12K-$100K/year in engineering time
+- NanoML value: 10x faster root-cause (minutes vs days), 50% fewer incidents reach production
+- Pricing: $5K-$15K/month (20-50% of value)
 
-**Demand Evidence**: 3 customer conversations (Physical.ai, Phia, startup) + 1 verbal commitment
+### MVP Roadmap (12 Weeks)
 
-### v2 Key Features (10-Week MVP)
+**Phase 1 (Weeks 1-3)**: Foundation
+- Data fingerprinting
+- Training experiment logging (MLflow integration)
+- Production prediction logging
+- Graph storage (data → training → production)
 
-**Week 1-2: Core CLI + Exact Duplicate Detection**
-- `datavint check <dataset>` command
-- `datavint history` command
-- Dataset fingerprinting (<30s worst case)
-- Local SQLite storage
+**Phase 2 (Weeks 4-6)**: Root-Cause Analysis
+- Distribution shift detection
+- Feature coverage regression
+- Training/serving skew detection
+- CLI: `nanoml diagnose --production-metric=ctr --date=2026-05-10`
 
-**Week 3-4: Near-Duplicate Detection ⭐**
-- 95%+ similarity detection via cosine similarity
-- Show similar experiments: "95% similar experiment ran 2 weeks ago"
-- Configurable threshold (`--similarity=0.95`)
+**Phase 3 (Weeks 7-9)**: Integration & Polish
+- MLflow plugin (zero code changes)
+- Airflow sensor (block training on data issues)
+- Web dashboard
+- Slack/PagerDuty integration
 
-**Week 5-6: Outcome Linkage + Cost Estimation ⭐**
-- Store experiment outcome (success/failure/metrics)
-- `datavint log-result <id> --status=success --metric=0.85`
-- GPU cost configuration: `datavint config set-gpu-price 4.76`
-- Show: "Estimated cost: $4200. Similar experiment failed with OOM."
+**Phase 4 (Weeks 10-12)**: Pilot & Iteration
+- Deploy with 1-2 pilot customers
+- 5+ successful root-cause diagnoses
+- <20% false positive rate
 
-**Week 7-8: Fast Path ⭐**
-- Cached fingerprints (instant if path unchanged in 24h)
-- Cloud metadata (S3 ETag, GCS md5Hash) for <5s checks
-- Sampling fallback (30s worst case)
-- Target: 90% of checks complete in <5 seconds
+### Differentiation
 
-**Week 9: Optional Team Sync ⭐**
-- `datavint init --team` enables cloud backend
-- PostgreSQL hosted (Supabase/Render)
-- Team collaboration: Engineer A's experiments visible to Engineer B
+| Tool | What They Do | Gap |
+|------|--------------|-----|
+| MLflow / W&B | Passive experiment tracking | No production outcome linkage |
+| Monte Carlo / Anomalo | Data pipeline monitoring | Don't understand ML training |
+| Datadog / New Relic | Infrastructure metrics | Treat ML models as black boxes |
+| LakeFS / DVC | Data versioning | No impact analysis |
 
-**Week 10: Polish + Documentation**
-- Error handling, docs, pilot testing
+**Our Moat**:
+1. Cross-layer graph (data → training → production)
+2. Outcome causality (trace production shifts to training changes)
+3. ML-specific failure mode understanding
+4. Compounding value (graph becomes irreplaceable after 3-6 months)
 
-### Moat & Competitive Advantage
+### Success Metrics
 
-**Positioning**: "Experiment governance" vs "experiment tracking" (MLflow/W&B are passive)
+**Month 3**: 2 pilot customers, $5K MRR, 20+ successful diagnoses, <20% false positive rate
+**Month 6**: 10 customers, $50K MRR, 80% pilot conversion
+**Month 12**: $200K ARR, 30 customers, 2 enterprise deals
 
-**Moat**:
-1. **Outcome data** (success/failure/metrics) - unique to DataVint, MLflow doesn't have this
-2. **Compounding value** - database becomes irreplaceable after 6 months
-3. **Catastrophic prevention** - prevents one $40K mistake (immediate ROI)
+### Why Pivot from GPU Waste Control?
 
-**Why MLflow can't copy easily**:
-- Outcome data requires user instrumentation (`datavint log-result`)
-- Near-duplicate detection requires similarity engine
-- Cost estimation requires GPU pricing configuration
-- DataVint has 6 months head start on database
+**Previous**: Pre-execution CLI preventing duplicate experiments
 
-### Success Criteria
+**Reasons**:
+1. Broader problem space (observability > duplicate prevention)
+2. Stronger moat (compounding graph data vs feature)
+3. Better economics (3-5x higher willingness-to-pay for time savings)
+4. Customer validation (HF0, Pearx, Point72 emphasize observability)
+5. Agent future (unified observability reduces cascading failure risk)
 
-**Week 10 (Launch)**:
-- 50 PyPI downloads in first week
-- 10 users run `datavint check` at least once
-- 3 users active (5+ checks)
-- 1 user configures GPU pricing (activation)
+### Next Steps (This Week)
 
-**Month 1**:
-- 200 total downloads
-- 20 active users
-- 5 users configure GPU pricing
-- 2 users report "warned me about similar experiment"
+1. **Customer validation**: 3-5 conversations about production regression pain
+2. **Technical spike**: Prototype fingerprinting + MLflow plugin (2-3 days)
+3. **Competitive analysis**: Deep dive Monte Carlo, Anomalo, Datadog ML
+4. **Refine pitch**: 100-word YC description + 3-slide deck
 
-**Month 2**:
-- 60% retention
-- 1 user refers to teammate
-- 1 user reports "cost estimation prevented wasteful run"
-
-**Month 3**:
-- 1 customer converts to paid OR requests team deployment
-
-### Implementation Status
-
-**Current**: Design approved, Week 1 ready to start
-
-**This Week**:
-1. ✅ Validate pricing with committed customer
-2. ✅ Start Week 1 implementation (CLI framework + fingerprinting)
-3. ✅ Schedule Week 11 kickoff call
+**Decision Point (End of Week)**: Commit to observability pivot OR return to GPU waste control
 
 ---
 
 ## SUPERSEDED DESIGNS
 
-### Design: DataVint - Recommendation Systems Data Quality SDK
+### Design: NanoML - ML Execution Waste Control Layer (v2)
+
+**Generated**: /plan-ceo-review on 2026-05-13
+**Status**: SUPERSEDED (pivoted to observability on 2026-05-17)
+**Full Design**: `wiki/changelog/2026-05-13-nanoml-gpu-waste-control-design-v2-expanded.md`
+
+**Why Superseded**: Observability addresses broader problem space with stronger moat and better economics. Root-cause analysis (time savings) has 3-5x higher willingness-to-pay than duplicate prevention (cost savings).
+
+### Design: NanoML - Recommendation Systems Data Quality SDK
 
 **Generated**: /office-hours on 2026-05-04
-**Status**: SUPERSEDED (pivoted to GPU waste control on 2026-05-13)
+**Status**: SUPERSEDED (pivoted to GPU waste control on 2026-05-13, then to observability on 2026-05-17)
 **Full History**: See `wiki/changelog/` for design evolution
-
-**Why Superseded**: Customer validation (3 ML team leads) revealed broader problem than data quality. Customers said "data quality is one aspect of avoiding unnecessary GPU runs" and pushed toward GPU waste control.
 
 **Pivot History**:
 - `2026-05-04`: Rec systems data quality SDK (original design)
 - `2026-05-10`: Experiment-level data versioning pivot
 - `2026-05-13`: GPU waste control layer (customer-driven pivot)
 - `2026-05-13`: v2 expanded (CEO review + selective expansion)
+- `2026-05-17`: Observability & root-cause analysis (major pivot)
 
-For full details on superseded designs, see `wiki/changelog/`.
+For full details on all designs, see `wiki/changelog/`.

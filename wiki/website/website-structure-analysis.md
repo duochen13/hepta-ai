@@ -54,7 +54,7 @@
 
 ---
 
-## DataVint Website Structure Mapping
+## NanoML Website Structure Mapping
 
 ### ✅ Currently Implemented
 
@@ -93,7 +93,7 @@
 
 ---
 
-## Recommended DataVint Website Flow
+## Recommended NanoML Website Flow
 
 ### Version 1: MVP Launch (Current + 3 additions)
 
@@ -119,7 +119,7 @@
 ```
 [Keep all from V1, plus:]
 
-7.5 **[NEW] How DataVint Learns** 🔴
+7.5 **[NEW] How NanoML Learns** 🔴
    - Visual showing: Dataset 1 → Learns patterns → Dataset 2 (smarter) → Dataset 3 (even smarter)
    - "The more you use it, the better it gets"
 
@@ -149,34 +149,34 @@
 - **Fireworks**: Dark theme (developer-focused)
 - **Cleanlab**: Light theme (enterprise-friendly)
 - **lakeFS**: Light theme
-- **Recommendation**: DataVint's light theme ✅ correct for ML/data teams
+- **Recommendation**: NanoML's light theme ✅ correct for ML/data teams
 
 ### 2. **Messaging Hierarchy**
 All three lead with **transformation**, not features:
 - Fireworks: "From Inference to Intelligence"
 - Cleanlab: "Keep AI mistakes away"
 - lakeFS: "Bridging the AI infrastructure gap"
-- **DataVint**: "Training Data Compiler" ✅ matches this pattern
+- **NanoML**: "Training Data Compiler" ✅ matches this pattern
 
 ### 3. **Social Proof Placement**
 - Appears **immediately after hero** (within first 2 sections)
 - Uses **recognizable enterprise logos** (Netflix, Google, Amazon)
-- **DataVint gap**: Need real customer logos or beta user quotes
+- **NanoML gap**: Need real customer logos or beta user quotes
 
 ### 4. **Technical Depth Balance**
 - Hero: Simple, benefit-focused
 - Middle sections: Show the "how" with diagrams
 - Bottom: Link to docs for deep technical details
-- **DataVint**: Good balance ✅
+- **NanoML**: Good balance ✅
 
 ### 5. **Multiple CTAs**
 - Primary: "Get Started Free" / "Try Now"
 - Secondary: "Book a Demo" / "Talk to Team"
-- **DataVint**: Has both ✅
+- **NanoML**: Has both ✅
 
 ---
 
-## Action Items for DataVint Website
+## Action Items for NanoML Website
 
 ### Immediate (Week 1)
 - [ ] Add Integration Section (Pandas, Spark, Sklearn logos)
@@ -185,7 +185,7 @@ All three lead with **transformation**, not features:
 
 ### Short-term (Month 1)
 - [ ] Create detailed case study page (Titanic validation journey)
-- [ ] Add "How DataVint Learns" visualization
+- [ ] Add "How NanoML Learns" visualization
 - [ ] Build simple interactive demo (upload CSV → see issues)
 
 ### Long-term (Quarter 1)
@@ -212,7 +212,7 @@ All three lead with **transformation**, not features:
 
 ## Conclusion
 
-**DataVint's current structure is 70% aligned with professional ML infrastructure sites.**
+**NanoML's current structure is 70% aligned with professional ML infrastructure sites.**
 
 **Missing critical elements:**
 1. Integration/ecosystem section (easy to add)

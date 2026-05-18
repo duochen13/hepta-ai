@@ -1,4 +1,4 @@
-# DataVint — Product Design Spec
+# NanoML — Product Design Spec
 
 **Date:** 2026-04-29 (Revised after engineering review)
 **Stage:** Pre-seed / MVP
@@ -36,7 +36,7 @@
 
 ## Inspiration
 
-Named after the Heptapod language in *Arrival* — scientists finding hidden patterns in an alien language. DataVint finds hidden patterns in your training data: which samples are helping, which are hurting, and what the optimal distribution looks like.
+Named after the Heptapod language in *Arrival* — scientists finding hidden patterns in an alien language. NanoML finds hidden patterns in your training data: which samples are helping, which are hurting, and what the optimal distribution looks like.
 
 ---
 
@@ -62,9 +62,9 @@ Existing tools fall into two camps:
 - **Monitoring only** (TFDV, Deepchecks, Evidently, Great Expectations): detect problems, alert, stop there
 - **Primitive fixes** (PyTorch `WeightedRandomSampler`, sklearn `class_weight`): you define the fix manually
 
-Nobody closes the loop from detection to action. That is DataVint.
+Nobody closes the loop from detection to action. That is NanoML.
 
-> "What Meta's ML infra team does with 10 engineers per product, DataVint does automatically for any company."
+> "What Meta's ML infra team does with 10 engineers per product, NanoML does automatically for any company."
 
 ---
 
@@ -78,16 +78,16 @@ A sample can be unreliable without being wrong:
 - Gradient opposing the batch → actively hurting training
 - Feature computed differently at train vs. serving time → model trained on data it will never see again
 
-DataVint does not claim ground truth. It identifies unreliable samples using proxy signals and prescribes actions. The user decides which actions to apply.
+NanoML does not claim ground truth. It identifies unreliable samples using proxy signals and prescribes actions. The user decides which actions to apply.
 
 ---
 
 ## Three Product Modes
 
-Users arrive with different levels of domain knowledge. DataVint supports all three:
+Users arrive with different levels of domain knowledge. NanoML supports all three:
 
 ### Mode 1 — "I know what's bad" (Prescription)
-The MLE has domain knowledge and knows which issues matter. DataVint executes the fix at scale.
+The MLE has domain knowledge and knows which issues matter. NanoML executes the fix at scale.
 
 Example: Meta MLEs know that duplicate samples with conflicting labels confuse the model (sees sample with label=1, then identical sample with label=0). They know it's bad — they need a tool to find all 18,000 instances and generate the fix automatically.
 
@@ -97,7 +97,7 @@ manifest = opt.fix("class_imbalance")   # I know my ratio is wrong, fix it
 ```
 
 ### Mode 2 — "Show me what's hidden" (Discovery)
-The MLE doesn't know what's wrong. DataVint surfaces hidden patterns they couldn't see:
+The MLE doesn't know what's wrong. NanoML surfaces hidden patterns they couldn't see:
 
 - "23% of your APAC samples have conflicting labels — your other regions are fine"
 - "Your weekend data has 4x higher label noise than weekday data"
@@ -112,7 +112,7 @@ report.show()   # surfaces hidden patterns ranked by estimated model impact
 ```
 
 ### Mode 3 — "What if I..." (Exploration)
-The MLE thinks in experiments. Instead of asking "is this data bad?", they ask "what happens if I change this?" DataVint simulates hypothetical changes using proxy signals — no model retrain required.
+The MLE thinks in experiments. Instead of asking "is this data bad?", they ask "what happens if I change this?" NanoML simulates hypothetical changes using proxy signals — no model retrain required.
 
 ```python
 opt.simulate("remove samples where engagement_seconds < 2")
@@ -160,7 +160,7 @@ manifest.apply() → train model → eval NE/AUC
 ⑥ dv.record_feedback()       — improves base policy + domain-adaptive layer
 ```
 
-TFDV stops at step ②. DataVint goes to step ⑥.
+TFDV stops at step ②. NanoML goes to step ⑥.
 
 ---
 
@@ -218,7 +218,7 @@ Grounded in real issues from Meta, Google, Uber, TikTok engineering research.
 
 ## User-Configurable Thresholds
 
-Thresholds are domain-specific. A 3% duplication rate may be acceptable in one domain and problematic in another. DataVint ships defaults based on common ML practice; the user owns the decision.
+Thresholds are domain-specific. A 3% duplication rate may be acceptable in one domain and problematic in another. NanoML ships defaults based on common ML practice; the user owns the decision.
 
 Each issue surfaces with:
 1. **Metric** — what was measured (3% duplication rate)
@@ -251,9 +251,9 @@ manifest = report.apply()
 manifest.save("manifest.json")
 ```
 
-The output is always a manifest. This is what separates DataVint from TFDV: TFDV tells you what's wrong, DataVint hands you the prescription.
+The output is always a manifest. This is what separates NanoML from TFDV: TFDV tells you what's wrong, NanoML hands you the prescription.
 
-**Train on cleaned data, eval on raw test data intentionally.** The test set is kept raw and representative of production. If the model trained on DataVint's manifest outperforms the baseline on messy real-world eval data, the claim is maximally strong: better model performance even against noisy production conditions.
+**Train on cleaned data, eval on raw test data intentionally.** The test set is kept raw and representative of production. If the model trained on NanoML's manifest outperforms the baseline on messy real-world eval data, the claim is maximally strong: better model performance even against noisy production conditions.
 
 ---
 
@@ -328,7 +328,7 @@ Learns what "reliable sample" means for this specific team's data:
 
 This solves the "different pipelines per team" problem: each team runs their own SDK instance with their own domain-adaptive layer. No central standardization required.
 
-| RL concept | DataVint equivalent |
+| RL concept | NanoML equivalent |
 |---|---|
 | State | Proxy signal vector for a sample or batch |
 | Action | Upweight / downweight / filter |
@@ -365,7 +365,7 @@ If correlation is above ~0.5, the policy is useful. If below, the proxy reward i
 |---|---|---|
 | No fix (raw data) | 1:100 | 0.758 |
 | Heuristic (fixed 1:10) | 1:10 | 0.771 |
-| DataVint policy (label entropy = 0.41 → prescribes 1:7) | 1:7 | 0.779 |
+| NanoML policy (label entropy = 0.41 → prescribes 1:7) | 1:7 | 0.779 |
 
 The policy observes that high label entropy means the positive signal is weak — so it pushes the ratio tighter than the generic heuristic. This is a data-specific decision the heuristic cannot make. These numbers are targets to validate, not claims.
 
@@ -380,7 +380,7 @@ The slow loop (customer retrains model monthly = 12 signals/year per customer) i
 
 **Loop 1 — Proxy reward (seconds, no retrain)**
 
-After applying a manifest, DataVint measures immediately whether the dataset moved in the right direction:
+After applying a manifest, NanoML measures immediately whether the dataset moved in the right direction:
 
 | Proxy signal | Before manifest | After manifest | Interpretation |
 |---|---|---|---|
@@ -438,7 +438,7 @@ Designed to feel familiar to engineers who know TFDV, while extending the workfl
 
 **Statistics Format: Python Dataclasses (Not Protocol Buffers)**
 
-Unlike TFDV, DataVint uses native Python dataclasses instead of protocol buffers for statistics representation. This decision prioritizes:
+Unlike TFDV, NanoML uses native Python dataclasses instead of protocol buffers for statistics representation. This decision prioritizes:
 - Zero platform dependencies (no protoc compiler required)
 - Apple Silicon compatibility (no binary wheel issues)
 - Simple pip install experience
@@ -449,7 +449,7 @@ Trade-off: We lose binary TFDV proto compatibility, but gain simplicity and broa
 ### Recommended Package Structure
 
 ```
-datavint/
+nanoml/
 ├── __init__.py                 # Top-level API exports
 ├── statistics.py               # generate_statistics()
 ├── issues.py                   # detect_issues(), Issue dataclass
@@ -508,7 +508,7 @@ benchmarks/
 
 This exceeds typical "simple library" scope but is manageable for an MVP with strong separation of concerns.
 
-| TFDV step | DataVint equivalent | What's new |
+| TFDV step | NanoML equivalent | What's new |
 |---|---|---|
 | `generate_statistics_from_csv()` | `dv.generate_statistics()` | adds label entropy per segment |
 | `visualize_statistics()` | `dv.visualize_statistics()` | adds issue badges, no CDN/Jupyter required |
@@ -522,8 +522,8 @@ This exceeds typical "simple library" scope but is manageable for an MVP with st
 **API style:** module-level functions (like TFDV), not a class instance. Data objects (`Statistics`, `Issues`, `Manifest`) are explicit and inspectable at every step.
 
 ```python
-pip install datavint
-import datavint as dv
+pip install nanoml
+import nanoml as dv
 from pathlib import Path
 from typing import Optional, List, Union
 import pandas as pd
@@ -757,7 +757,7 @@ def generate_manifest(
 ```python
 import logging
 
-logger = logging.getLogger("datavint")
+logger = logging.getLogger("nanoml")
 
 # User-facing progress logging
 def generate_statistics(data, label_col=None):
@@ -916,7 +916,7 @@ stats = dv.generate_statistics(
 ## The 10-Minute Demo
 
 ```python
-import datavint as dv
+import nanoml as dv
 
 # ── 1. Profile ───────────────────────────────────────────────────────────
 train_stats = dv.generate_statistics("train.csv", label_col="click")
@@ -935,7 +935,7 @@ manifest.summary()
 
 # ── 4. Train both models ─────────────────────────────────────────────────
 model_baseline = train(raw_data)               # NE: 0.981  AUC: 0.762
-model_datavint    = train(manifest.apply(raw_data))  # NE: 0.954  AUC: 0.779
+model_nanoml    = train(manifest.apply(raw_data))  # NE: 0.954  AUC: 0.779
 
 # Same model architecture. Same training code. Only the data changed.
 ```
@@ -1008,13 +1008,13 @@ Two metrics, one comparison, every fix explained. No model changes, no architect
 | **cleanlab** | ✓ label errors only | — | — |
 | **Great Expectations** | ✓ rules you write, no fix | — | — |
 | **Evidently** | — | drift only | — |
-| **DataVint** | ✓ + manifest | ✓ + ML impact | ✓ proxy simulation |
+| **NanoML** | ✓ + manifest | ✓ + ML impact | ✓ proxy simulation |
 
 Mode 3 is completely uncovered by any existing tool.
 
 ### By Capability
 
-| Capability | TFDV | Deepchecks | Snorkel | cleanlab | DataVint |
+| Capability | TFDV | Deepchecks | Snorkel | cleanlab | NanoML |
 |---|---|---|---|---|---|
 | Schema validation | ✓ | ✓ | — | — | ✓ |
 | Train-test skew detection | ✓ | ✓ | — | — | ✓ |
@@ -1030,7 +1030,7 @@ Mode 3 is completely uncovered by any existing tool.
 **TFDV** is TensorFlow-locked, requires full TFX adoption, and stops at detection. Declining with TF's market share.
 **Deepchecks / Evidently / Great Expectations** are monitoring-only — no manifest, no optimization, no simulation.
 
-> "TFDV tells you what's wrong. DataVint hands you the prescription."
+> "TFDV tells you what's wrong. NanoML hands you the prescription."
 
 ---
 
@@ -1088,7 +1088,7 @@ This is not a footnote — it is a core design constraint and enterprise sales e
 
 3. **Air-gap mode (enterprise)** — customer disables all telemetry. Base policy ships as a static artifact downloaded at install time (like a Hugging Face model). No policy updates, full privacy guarantee. Closes regulated industry deals (healthcare, finance).
 
-**What DataVint's servers receive:**
+**What NanoML's servers receive:**
 ```
 Aggregate signal: {issue: "class_imbalance", signal_stats: {...}, outcome: "improved"}
 No individual row. No feature value. No label.
@@ -1107,14 +1107,14 @@ No individual row. No feature value. No label.
 | Training data services | Scale AI alone: $29B valuation | — | — |
 
 **Comparable exits:**
-- Snorkel AI: $135M raised, ~$1B valuation (programmatic labeling only, narrower scope than DataVint)
+- Snorkel AI: $135M raised, ~$1B valuation (programmatic labeling only, narrower scope than NanoML)
 - cleanlab: $30M raised (label errors only)
 - Scale AI: $29B (human labeling + data services)
 
 **Initial SAM:** ~2,000 recommendation/ranking teams × $30K ARR = **$60M beachhead**
 **Expanded SAM:** ~20,000 companies doing production supervised ML × $30-100K ARR = **$600M–$2B**
 
-The TAM expands with AI adoption — more models in production = more training data problems = more DataVint customers. It is not a fixed market.
+The TAM expands with AI adoption — more models in production = more training data problems = more NanoML customers. It is not a fixed market.
 
 ---
 
@@ -1135,7 +1135,7 @@ Series A teams are too small (1–3 ML engineers), haven't yet accumulated enoug
 They are building internal tooling. At DoorDash or Airbnb scale, a dedicated ML platform team solves this problem themselves. They are not buyers — they are the benchmark.
 
 **Why not FAANG:**
-Meta, Google, Uber *are* the inspiration for DataVint. They solved this problem internally with 10 engineers per product. They will never buy it.
+Meta, Google, Uber *are* the inspiration for NanoML. They solved this problem internally with 10 engineers per product. They will never buy it.
 
 **The sweet spot:** A company that has production ML models generating real revenue, a 3–15 person ML team, no dedicated ML infra engineer, and a team lead who knows their model could be better but can't justify the time to investigate data quality manually.
 
@@ -1152,15 +1152,15 @@ Meta, Google, Uber *are* the inspiration for DataVint. They solved this problem 
 
 Not cold outbound. Content-led developer acquisition:
 
-1. **"Show HN" post:** "DataVint — we found 18k duplicates and a 4x label noise gap between APAC/NA in a public CTR dataset." ML engineers are drawn to concrete findings, not feature lists.
+1. **"Show HN" post:** "NanoML — we found 18k duplicates and a 4x label noise gap between APAC/NA in a public CTR dataset." ML engineers are drawn to concrete findings, not feature lists.
 
-2. **Blog post targeting the exact pain:** "Why your CTR model degrades every Monday" (answer: weekend behavioral data has different label noise patterns — a Mode 2 insight DataVint finds). SEO targets: "training data quality", "negative sampling ratio", "train serving skew".
+2. **Blog post targeting the exact pain:** "Why your CTR model degrades every Monday" (answer: weekend behavioral data has different label noise patterns — a Mode 2 insight NanoML finds). SEO targets: "training data quality", "negative sampling ratio", "train serving skew".
 
-3. **Kaggle / public dataset findings:** Run DataVint on Criteo, MovieLens, RecSys competition datasets. Publish the findings. Show what the tool finds on data engineers already know.
+3. **Kaggle / public dataset findings:** Run NanoML on Criteo, MovieLens, RecSys competition datasets. Publish the findings. Show what the tool finds on data engineers already know.
 
 4. **ML newsletter placements:** Chip Huyen's newsletter, Sebastian Raschka, The Batch. One placement to the right audience > 10,000 cold emails.
 
-**The aha moment:** Engineer runs `pip install datavint` on their dataset, gets a Mode 2 insight in under 5 minutes that their team didn't know about. That is the acquisition event. Everything before it is getting them to that run. Everything after it is converting the champion into a team purchase.
+**The aha moment:** Engineer runs `pip install nanoml` on their dataset, gets a Mode 2 insight in under 5 minutes that their team didn't know about. That is the acquisition event. Everything before it is getting them to that run. Everything after it is converting the champion into a team purchase.
 
 ### Sales Motion
 
@@ -1188,7 +1188,7 @@ Phase 3 (A):   Any supervised ML — generic SDK, vertical adapters, connector i
 TFDV stops at detection, is TensorFlow-locked, and has no what-if simulation. We output a manifest. We work with any framework. We simulate hypotheticals. The gap between "here's what's wrong" and "here's the fixed dataset ready for training" is the entire product.
 
 **"Does your policy actually beat heuristics on day 1?"**
-Yes — concretely. On the Criteo ads dataset, a fixed 1:10 negative downsampling heuristic achieves AUC 0.771. DataVint's policy, observing label entropy = 0.41, prescribes 1:7 and achieves AUC 0.779. The policy uses data-specific signal the heuristic ignores. The base policy is pre-trained on public benchmark datasets with known outcomes, so this is measured, not theoretical.
+Yes — concretely. On the Criteo ads dataset, a fixed 1:10 negative downsampling heuristic achieves AUC 0.771. NanoML's policy, observing label entropy = 0.41, prescribes 1:7 and achieves AUC 0.779. The policy uses data-specific signal the heuristic ignores. The base policy is pre-trained on public benchmark datasets with known outcomes, so this is measured, not theoretical.
 
 **"How does the contextual bandit learn with only 12 retrains per customer per year?"**
 It doesn't rely on per-customer retrains. The policy learns from cross-customer aggregate signals: with 1,000 customers each running 10 diagnoses/month, that is 10,000 signal-outcome pairs per month. Per-customer model delta (the slow loop) is optional high-quality calibration signal, not the primary learning mechanism. The fast loop — proxy reward computed in seconds after manifest application — provides continuous signal without any retrain.
@@ -1200,7 +1200,7 @@ ML engineers at Series B–D tech companies running recommendation or ranking mo
 Privacy is a design constraint, not a policy. Raw data never leaves the customer's machine — the SDK is local-only. Only aggregate proxy statistics are transmitted. Differential privacy noise is applied before transmission. Air-gap mode disables all telemetry for regulated industries. The telemetry layer is open-sourced and auditable. This closes the deal, not blocks it.
 
 **"Why won't infra players replace you?"**
-Dataiku and Databricks are single-tenant platforms — they cannot build a cross-customer learned policy without breaking their privacy model. Google's TFDV is TF-locked and declining. Mode 3 (what-if simulation) has no equivalent anywhere. By the time an infra player builds this, DataVint has 12+ months of cross-customer signal that cannot be reproduced.
+Dataiku and Databricks are single-tenant platforms — they cannot build a cross-customer learned policy without breaking their privacy model. Google's TFDV is TF-locked and declining. Mode 3 (what-if simulation) has no equivalent anywhere. By the time an infra player builds this, NanoML has 12+ months of cross-customer signal that cannot be reproduced.
 
 ---
 
@@ -1208,7 +1208,7 @@ Dataiku and Databricks are single-tenant platforms — they cannot build a cross
 
 Top issues confirmed from big tech engineering research:
 
-| Issue | Confirmed by | DataVint Mode |
+| Issue | Confirmed by | NanoML Mode |
 |---|---|---|
 | Training-serving skew | Meta, Google (Google Play example), Uber | 1 + 2 |
 | Feature coverage drops | Meta (#1 monitored metric) | 1 + 2 |
@@ -1221,7 +1221,7 @@ Top issues confirmed from big tech engineering research:
 | Class imbalance | Meta ads (1:1000+), fraud universal | 1 |
 | Silent hardware corruption | Meta (GPU SDCs) | ✗ out of scope |
 
-9 of the 10 most common issues in big tech are in DataVint's scope.
+9 of the 10 most common issues in big tech are in NanoML's scope.
 
 ---
 
@@ -1236,7 +1236,7 @@ Top issues confirmed from big tech engineering research:
 
 ## Selling Points
 
-**A/B story:** Same model, same architecture. One trained on raw data. One trained on DataVint manifest. Consistent improvement.
+**A/B story:** Same model, same architecture. One trained on raw data. One trained on NanoML manifest. Consistent improvement.
 
 **"Not a tool — a system":** The policy gets smarter with every dataset it sees. Day 1 it's useful. Month 6 it's a competitive advantage.
 
@@ -1250,7 +1250,7 @@ The full taxonomy specifies 20 issue types across 5 categories. This is over-eng
 
 ### v0.1 — Core Detection (4 weeks)
 
-**Goal:** Prove that DataVint can detect real issues and that the detection is valuable.
+**Goal:** Prove that NanoML can detect real issues and that the detection is valuable.
 
 **Ship:**
 - `dv.generate_statistics()` - pandas-based, in-memory only
@@ -1275,7 +1275,7 @@ The full taxonomy specifies 20 issue types across 5 categories. This is over-eng
 
 ### v0.2 — Prescription Engine (weeks 5-8)
 
-**Goal:** Prove that DataVint's prescriptions improve model performance.
+**Goal:** Prove that NanoML's prescriptions improve model performance.
 
 **Add:**
 - `dv.generate_manifest()` - Issue list → sample weights + filter masks
@@ -1287,7 +1287,7 @@ The full taxonomy specifies 20 issue types across 5 categories. This is over-eng
 
 **Validation:**
 - Run on Criteo dataset
-- Baseline AUC vs DataVint-manifest AUC
+- Baseline AUC vs NanoML-manifest AUC
 - Target: +1-2% AUC improvement
 
 **Success metric:** 5 teams train models on manifests, 4+ see AUC improvement.
@@ -1328,11 +1328,11 @@ The proof: **applying specific data fixes measurably improves model performance 
 
 ### What MVP 1 Ships
 
-**Step 1 — Profile (TFDV-style stats + DataVint extras)**
+**Step 1 — Profile (TFDV-style stats + NanoML extras)**
 
 Per-feature output: count, missing %, mean, p50, p99, median, distribution histogram.
 
-Two DataVint-specific stats TFDV does not compute:
+Two NanoML-specific stats TFDV does not compute:
 - Label entropy per feature segment (not just global)
 - L∞ train/test skew per feature (Jensen-Shannon for continuous, L∞ for categorical)
 
@@ -1368,7 +1368,7 @@ Three fixes demonstrated in MVP 1, each cleanly attributable:
 Retrain both LR and MLP on manifest-applied data. Confirm NE and AUC moved in the predicted direction. The prediction is directional (↓/↑), not quantitative — see Prescription Engine section.
 
 ### Target Demo Numbers (to validate, not claim)
-| Model | NE baseline | NE after DataVint | AUC baseline | AUC after DataVint |
+| Model | NE baseline | NE after NanoML | AUC baseline | AUC after NanoML |
 |---|---|---|---|---|
 | Logistic Regression | ~0.991 | ~0.961 | ~0.752 | ~0.771 |
 | 2-layer MLP | ~0.981 | ~0.954 | ~0.762 | ~0.779 |
@@ -1383,7 +1383,7 @@ Two models, same direction of improvement → model-agnostic claim holds.
 - Not streaming/chunked processing (v1.0)
 - Not all 20 issue types (start with 5 in v0.1, expand to 10 in v0.2)
 
-MVP 1 (v0.1 + v0.2) proves one thing: **DataVint-optimized training data produces better models than raw data, reproducibly, on an industry benchmark.**
+MVP 1 (v0.1 + v0.2) proves one thing: **NanoML-optimized training data produces better models than raw data, reproducibly, on an industry benchmark.**
 
 ---
 
@@ -1400,10 +1400,10 @@ Issues with objective definitions that apply across all domains:
 - Feature value range violations
 - Temporal drift (distribution shift across time windows)
 
-These require no user input. DataVint detects them on any dataset.
+These require no user input. NanoML detects them on any dataset.
 
 ### Domain-Specific Issues (user-defined via rule registration API)
-Some issues require domain knowledge that DataVint cannot infer:
+Some issues require domain knowledge that NanoML cannot infer:
 
 ```python
 # Example: in recommendation systems, non-impression samples are treated
@@ -1422,7 +1422,7 @@ def low_engagement_signal(x):
     return None
 ```
 
-**This rule API is the moat.** Over time DataVint accumulates a library of domain-specific rule templates contributed across customers (anonymized, opt-in):
+**This rule API is the moat.** Over time NanoML accumulates a library of domain-specific rule templates contributed across customers (anonymized, opt-in):
 - **E-commerce:** non-impression negatives, cart abandonment signal quality, return rate labels
 - **Fintech:** fraud label lag, dispute window contamination, synthetic minority oversampling boundaries
 - **Food delivery:** order cancellation label timing, reorder signal freshness, geographic segment imbalance

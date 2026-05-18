@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DataVint Dashboard - Experiment Lineage</title>
+    <title>NanoML Dashboard - Experiment Lineage</title>
     <style>
         * {
             margin: 0;
@@ -19,19 +19,6 @@
             background-image:
                 radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0);
             background-size: 20px 20px;
-        }
-
-        /* Accessibility: Screen reader only text */
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border-width: 0;
         }
 
         /* Header */
@@ -109,7 +96,7 @@
 
         .chat-subtitle {
             font-size: 13px;
-            color: #8A92A5; /* Increased contrast: 4.5:1 (WCAG AA compliant) */
+            color: #6B7280;
         }
 
         .chat-messages {
@@ -210,26 +197,16 @@
             transition: all 0.2s;
         }
 
-        .suggested-chip:hover,
-        .suggested-chip:focus {
+        .suggested-chip:hover {
             background: #8B5CF6;
             color: white;
             border-color: #8B5CF6;
-            outline: 2px solid #8B5CF6;
-            outline-offset: 2px;
         }
 
         .chat-input-container {
             padding: 16px 20px;
             border-top: 1px solid #2A2D35;
             background: #13151A;
-        }
-
-        .chat-input-label {
-            font-size: 12px;
-            color: #8A92A5;
-            margin-bottom: 8px;
-            display: block;
         }
 
         .chat-input-wrapper {
@@ -254,8 +231,6 @@
 
         .chat-input:focus {
             border-color: #8B5CF6;
-            outline: 2px solid #8B5CF6;
-            outline-offset: 2px;
         }
 
         .chat-input::placeholder {
@@ -276,11 +251,8 @@
             transition: background 0.2s;
         }
 
-        .send-button:hover,
-        .send-button:focus {
+        .send-button:hover {
             background: #7C3AED;
-            outline: 2px solid #8B5CF6;
-            outline-offset: 2px;
         }
 
         .send-button:disabled {
@@ -369,16 +341,9 @@
             transition: all 0.2s;
         }
 
-        .data-node:hover,
-        .data-node:focus {
+        .data-node:hover {
             border-color: #8B5CF6;
             box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
-            outline: none;
-        }
-
-        .data-node:focus-visible {
-            outline: 2px solid #8B5CF6;
-            outline-offset: 2px;
         }
 
         .data-node.active {
@@ -397,7 +362,6 @@
             font-weight: 600;
             font-size: 15px;
             color: #F3F4F6;
-            font-family: 'Monaco', 'Consolas', monospace; /* Monospace for technical IDs */
         }
 
         .node-timestamp {
@@ -407,14 +371,13 @@
 
         .node-message {
             font-size: 13px;
-            color: #A8B0C0; /* Increased contrast: 4.6:1 (WCAG AA compliant) */
+            color: #9CA3AF;
             margin-bottom: 8px;
         }
 
         .node-meta {
             font-size: 11px;
             color: #6B7280;
-            font-family: 'Monaco', 'Consolas', monospace;
         }
 
         /* Sweep Cluster */
@@ -468,16 +431,9 @@
             transition: all 0.2s;
         }
 
-        .model-node:hover,
-        .model-node:focus {
+        .model-node:hover {
             border-color: #10B981;
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
-            outline: none;
-        }
-
-        .model-node:focus-visible {
-            outline: 2px solid #10B981;
-            outline-offset: 2px;
         }
 
         .model-node.active {
@@ -491,8 +447,8 @@
         }
 
         .model-node.sweep-winner {
-            border-color: #86EFAC;
-            background: #0F1F19;
+            border-color: #F59E0B;
+            background: #1F1A0F;
         }
 
         .best-badge {
@@ -511,7 +467,7 @@
             position: absolute;
             top: -10px;
             right: 12px;
-            background: #86EFAC;
+            background: #F59E0B;
             color: white;
             font-size: 11px;
             font-weight: 600;
@@ -563,7 +519,7 @@
         }
 
         .connection-line {
-            stroke: #86EFAC;
+            stroke: #2A2D35;
             stroke-width: 2;
             fill: none;
             opacity: 0.6;
@@ -580,6 +536,47 @@
             stroke: #10B981;
             stroke-width: 3;
             opacity: 1;
+        }
+
+        /* Timeline Scrubber */
+        .timeline {
+            margin-top: 32px;
+            padding: 24px;
+            background: #1A1D23;
+            border-radius: 8px;
+            border: 1px solid #2A2D35;
+        }
+
+        .timeline-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #9CA3AF;
+            margin-bottom: 12px;
+        }
+
+        .timeline-bar {
+            position: relative;
+            height: 40px;
+            background: #13151A;
+            border-radius: 6px;
+            border: 1px solid #2A2D35;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 12px;
+            height: 12px;
+            background: #8B5CF6;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .timeline-marker:hover {
+            background: #7C3AED;
+            transform: translate(-50%, -50%) scale(1.2);
         }
 
         /* Comparison Panel */
@@ -650,28 +647,28 @@
 </head>
 <body>
     <!-- Header -->
-    <header class="header" role="banner">
+    <div class="header">
         <div class="logo">
-            <div class="logo-icon" aria-hidden="true"></div>
-            DataVint
+            <div class="logo-icon"></div>
+            NanoML
         </div>
-        <nav class="breadcrumb" aria-label="Breadcrumb">
+        <div class="breadcrumb">
             <span class="breadcrumb-item">project</span>
-            <span class="breadcrumb-separator" aria-hidden="true">></span>
-            <span class="breadcrumb-item" aria-current="page">test_learning_rate_experiment</span>
-        </nav>
-    </header>
+            <span class="breadcrumb-separator">></span>
+            <span class="breadcrumb-item">test_learning_rate_experiment</span>
+        </div>
+    </div>
 
     <!-- Main Container -->
     <div class="container">
         <!-- Chatbox Sidebar -->
-        <aside class="chatbox-sidebar" role="complementary" aria-label="Chat assistant">
+        <div class="chatbox-sidebar">
             <div class="chat-header">
                 <div class="chat-title">Assistant</div>
                 <div class="chat-subtitle">Ask about your experiments</div>
             </div>
 
-            <div class="chat-messages" id="chat-messages" role="log" aria-live="polite" aria-label="Chat conversation">
+            <div class="chat-messages" id="chat-messages">
                 <div class="message assistant">
                     <div class="message-bubble">
                         👋 Hi! I can help you understand your experiment results. Try asking me about your data or models.
@@ -690,8 +687,8 @@
                     <div class="message-bubble">
                         <strong>D1</strong> (fix user feature coverage) produced the best results. Models trained on D1 achieved:
                         <br><br>
-                        • <strong>M2.2:</strong> 0.701 NE (+1.3% vs best D0 model)<br>
-                        • <strong>M2.1:</strong> 0.723 NE<br>
+                        • <strong>M2.2:</strong> 0.867 NE (+1.3% vs best D0 model)<br>
+                        • <strong>M2.1:</strong> 0.841 NE<br>
                         <br>
                         The improved feature coverage in D1 was the key factor.
                     </div>
@@ -709,7 +706,7 @@
                     <div class="message-bubble">
                         <strong>M2</strong> (lr=0.005) had the best balance:
                         <br><br>
-                        • NE: 0.712 (highest in sweep)<br>
+                        • NE: 0.856 (highest in sweep)<br>
                         • Learning rate wasn't too aggressive (M1, M0 overfit)<br>
                         • Learning rate wasn't too conservative (M3 underfit)<br>
                         <br>
@@ -721,113 +718,93 @@
 
             <div class="suggested-queries">
                 <div class="suggested-title">Suggested</div>
-                <div class="suggested-chips" role="group" aria-label="Suggested questions">
-                    <button class="suggested-chip" tabindex="0">Compare M2.1 vs M2.2</button>
-                    <button class="suggested-chip" tabindex="0">Show all NE scores</button>
-                    <button class="suggested-chip" tabindex="0">Explain Sweep 2</button>
+                <div class="suggested-chips">
+                    <div class="suggested-chip">Compare M2.1 vs M2.2</div>
+                    <div class="suggested-chip">Show all NE scores</div>
+                    <div class="suggested-chip">Explain Sweep 2</div>
                 </div>
             </div>
 
             <div class="chat-input-container">
-                <label for="chat-input" class="chat-input-label">Ask a question</label>
                 <div class="chat-input-wrapper">
                     <textarea
                         class="chat-input"
                         placeholder="Ask about your experiments..."
                         rows="1"
                         id="chat-input"
-                        aria-label="Ask about your experiments"
                     ></textarea>
-                    <button class="send-button" id="send-button" aria-label="Send message">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <button class="send-button" id="send-button">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
                         </svg>
                     </button>
                 </div>
             </div>
-        </aside>
+        </div>
 
         <!-- Graph Area -->
-        <main class="graph-area" role="main" aria-label="Experiment lineage graph">
+        <div class="graph-area">
             <div class="graph-container">
                 <!-- Legend -->
-                <aside class="legend" role="complementary" aria-label="Graph legend">
+                <div class="legend">
                     <div class="legend-title">Legend</div>
                     <div class="legend-item">
-                        <div class="legend-icon" style="background: #1E2228; border: 2px solid #2A2D35;" aria-hidden="true"></div>
+                        <div class="legend-icon" style="background: #1E2228; border: 2px solid #2A2D35;"></div>
                         <span class="legend-text">Data Commit</span>
                     </div>
                     <div class="legend-item">
-                        <div class="legend-icon" style="background: #1F1A0F; border: 2px solid #F59E0B;" aria-hidden="true"></div>
+                        <div class="legend-icon" style="background: #1F1A0F; border: 2px solid #F59E0B;"></div>
                         <span class="legend-text">Sweep Winner</span>
                     </div>
                     <div class="legend-item">
-                        <div class="legend-icon" style="background: #0F1F19; border: 3px solid #10B981;" aria-hidden="true"></div>
+                        <div class="legend-icon" style="background: #0F1F19; border: 3px solid #10B981;"></div>
                         <span class="legend-text">Overall Best</span>
                     </div>
-                </aside>
+                </div>
 
-                <svg id="connections" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg>
+                <svg id="connections" xmlns="http://www.w3.org/2000/svg"></svg>
 
                 <div class="graph">
                     <!-- Data Branch (Left) -->
-                    <section class="branch">
-                        <h2 class="branch-label">Data Commits</h2>
+                    <div class="branch">
+                        <div class="branch-label">Data Commits</div>
                         <div class="nodes" id="data-nodes">
                             <!-- D1 -->
-                            <article
-                                class="data-node"
-                                data-id="D1"
-                                tabindex="0"
-                                role="button"
-                                aria-label="Data commit D1: fix user feature coverage, hash a3f9d2c, 1.2 million rows, created 2 hours ago"
-                            >
+                            <div class="data-node" data-id="D1">
                                 <div class="node-header">
                                     <span class="node-id">D1</span>
                                     <span class="node-timestamp">2h ago</span>
                                 </div>
                                 <div class="node-message">fix user feature coverage</div>
                                 <div class="node-meta">hash: a3f9d2c • 1.2M rows</div>
-                            </article>
+                            </div>
 
                             <!-- D0 -->
-                            <article
-                                class="data-node"
-                                data-id="D0"
-                                tabindex="0"
-                                role="button"
-                                aria-label="Data commit D0: dedup interactions, hash 7b2e8f1, 1.5 million rows, created 5 hours ago"
-                            >
+                            <div class="data-node" data-id="D0">
                                 <div class="node-header">
                                     <span class="node-id">D0</span>
                                     <span class="node-timestamp">5h ago</span>
                                 </div>
                                 <div class="node-message">dedup interactions</div>
                                 <div class="node-meta">hash: 7b2e8f1 • 1.5M rows</div>
-                            </article>
+                            </div>
                         </div>
-                    </section>
+                    </div>
 
                     <!-- Model Branch (Right) -->
-                    <section class="branch">
-                        <h2 class="branch-label">Model Runs</h2>
+                    <div class="branch">
+                        <div class="branch-label">Model Runs</div>
                         <div class="nodes" id="model-nodes">
                             <!-- Sweep 2: Sample Rate (from D1) -->
-                            <div class="sweep-cluster" role="group" aria-label="Sweep 2: Sample Rate experiments from D1, learning rate 0.005">
+                            <div class="sweep-cluster">
                                 <div class="sweep-label">
-                                    <span class="sweep-label-icon" aria-hidden="true">2</span>
+                                    <span class="sweep-label-icon">2</span>
                                     Sweep 2: Sample Rate (from D1, lr=0.005)
                                 </div>
                                 <div class="sweep-models">
-                                    <!-- M2.2 (Sweep 2 Winner) -->
-                                    <article
-                                        class="model-node sweep-winner"
-                                        data-id="M2.2"
-                                        tabindex="0"
-                                        role="button"
-                                        aria-label="Model run M2.2: Sweep 2 winner, sample rate 0.6, NE 0.701 excellent, CTR 0.0058 excellent, learning rate 0.005, coverage 94% excellent, created 1 hour ago"
-                                    >
-                                        <span class="sweep-winner-badge">Sweep 2 Winner</span>
+                                    <!-- M2.2 (Overall Best) -->
+                                    <div class="model-node best" data-id="M2.2">
+                                        <span class="best-badge">BEST</span>
                                         <div class="node-header">
                                             <span class="node-id">M2.2</span>
                                             <span class="node-timestamp">1h ago</span>
@@ -836,17 +813,11 @@
                                         <div class="metrics">
                                             <div class="metric">
                                                 <div class="metric-label">NE</div>
-                                                <div class="metric-value good">
-                                                    0.701
-                                                    <span class="sr-only">(excellent)</span>
-                                                </div>
+                                                <div class="metric-value good">0.867</div>
                                             </div>
                                             <div class="metric">
                                                 <div class="metric-label">CTR</div>
-                                                <div class="metric-value good">
-                                                    0.0058
-                                                    <span class="sr-only">(excellent)</span>
-                                                </div>
+                                                <div class="metric-value good">0.0058</div>
                                             </div>
                                             <div class="metric">
                                                 <div class="metric-label">lr</div>
@@ -854,22 +825,13 @@
                                             </div>
                                             <div class="metric">
                                                 <div class="metric-label">coverage</div>
-                                                <div class="metric-value good">
-                                                    94%
-                                                    <span class="sr-only">(excellent)</span>
-                                                </div>
+                                                <div class="metric-value good">94%</div>
                                             </div>
                                         </div>
-                                    </article>
+                                    </div>
 
                                     <!-- M2.1 -->
-                                    <article
-                                        class="model-node"
-                                        data-id="M2.1"
-                                        tabindex="0"
-                                        role="button"
-                                        aria-label="Model run M2.1: sample rate 0.4, NE 0.723 good, CTR 0.0051 good, learning rate 0.005, coverage 89% good, created 2 hours ago"
-                                    >
+                                    <div class="model-node" data-id="M2.1">
                                         <div class="node-header">
                                             <span class="node-id">M2.1</span>
                                             <span class="node-timestamp">2h ago</span>
@@ -878,17 +840,11 @@
                                         <div class="metrics">
                                             <div class="metric">
                                                 <div class="metric-label">NE</div>
-                                                <div class="metric-value ok">
-                                                    0.723
-                                                    <span class="sr-only">(good)</span>
-                                                </div>
+                                                <div class="metric-value ok">0.841</div>
                                             </div>
                                             <div class="metric">
                                                 <div class="metric-label">CTR</div>
-                                                <div class="metric-value ok">
-                                                    0.0051
-                                                    <span class="sr-only">(good)</span>
-                                                </div>
+                                                <div class="metric-value ok">0.0051</div>
                                             </div>
                                             <div class="metric">
                                                 <div class="metric-label">lr</div>
@@ -896,31 +852,23 @@
                                             </div>
                                             <div class="metric">
                                                 <div class="metric-label">coverage</div>
-                                                <div class="metric-value ok">
-                                                    89%
-                                                    <span class="sr-only">(good)</span>
-                                                </div>
+                                                <div class="metric-value ok">89%</div>
                                             </div>
                                         </div>
-                                    </article>
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- Sweep 1: Learning Rate (from D0) -->
-                            <div class="sweep-cluster" role="group" aria-label="Sweep 1: Learning Rate experiments from D0">
+                            <div class="sweep-cluster">
                                 <div class="sweep-label">
-                                    <span class="sweep-label-icon" aria-hidden="true">1</span>
+                                    <span class="sweep-label-icon">1</span>
                                     Sweep 1: Learning Rate (from D0)
                                 </div>
                                 <div class="sweep-models">
-                                    <!-- M2 (Regular run, selected for next sweep) -->
-                                    <article
-                                        class="model-node"
-                                        data-id="M2"
-                                        tabindex="0"
-                                        role="button"
-                                        aria-label="Model run M2: learning rate 0.005 selected for Sweep 2, NE 0.712 good, CTR 0.0053 good, created 5 hours ago"
-                                    >
+                                    <!-- M2 (Sweep 1 Winner) -->
+                                    <div class="model-node sweep-winner" data-id="M2">
+                                        <span class="sweep-winner-badge">Sweep 1 Winner</span>
                                         <div class="node-header">
                                             <span class="node-id">M2</span>
                                             <span class="node-timestamp">5h ago</span>
@@ -929,29 +877,17 @@
                                         <div class="metrics">
                                             <div class="metric">
                                                 <div class="metric-label">NE</div>
-                                                <div class="metric-value good">
-                                                    0.712
-                                                    <span class="sr-only">(excellent)</span>
-                                                </div>
+                                                <div class="metric-value good">0.856</div>
                                             </div>
                                             <div class="metric">
                                                 <div class="metric-label">CTR</div>
-                                                <div class="metric-value good">
-                                                    0.0053
-                                                    <span class="sr-only">(excellent)</span>
-                                                </div>
+                                                <div class="metric-value good">0.0053</div>
                                             </div>
                                         </div>
-                                    </article>
+                                    </div>
 
                                     <!-- M3 -->
-                                    <article
-                                        class="model-node"
-                                        data-id="M3"
-                                        tabindex="0"
-                                        role="button"
-                                        aria-label="Model run M3: learning rate 0.010, NE 0.734 bad, CTR 0.0047, created 5 hours ago"
-                                    >
+                                    <div class="model-node" data-id="M3">
                                         <div class="node-header">
                                             <span class="node-id">M3</span>
                                             <span class="node-timestamp">5h ago</span>
@@ -960,27 +896,17 @@
                                         <div class="metrics">
                                             <div class="metric">
                                                 <div class="metric-label">NE</div>
-                                                <div class="metric-value bad">
-                                                    0.734
-                                                    <span class="sr-only">(bad)</span>
-                                                </div>
+                                                <div class="metric-value ok">0.823</div>
                                             </div>
                                             <div class="metric">
                                                 <div class="metric-label">CTR</div>
                                                 <div class="metric-value">0.0047</div>
                                             </div>
                                         </div>
-                                    </article>
+                                    </div>
 
-                                    <!-- M1 (Sweep 1 Winner) -->
-                                    <article
-                                        class="model-node sweep-winner"
-                                        data-id="M1"
-                                        tabindex="0"
-                                        role="button"
-                                        aria-label="Model run M1: Sweep 1 winner, learning rate 0.020, NE 0.698 excellent, CTR 0.0042, created 6 hours ago"
-                                    >
-                                        <span class="sweep-winner-badge">Sweep 1 Winner</span>
+                                    <!-- M1 -->
+                                    <div class="model-node" data-id="M1">
                                         <div class="node-header">
                                             <span class="node-id">M1</span>
                                             <span class="node-timestamp">6h ago</span>
@@ -989,27 +915,17 @@
                                         <div class="metrics">
                                             <div class="metric">
                                                 <div class="metric-label">NE</div>
-                                                <div class="metric-value ok">
-                                                    0.698
-                                                    <span class="sr-only">(good)</span>
-                                                </div>
+                                                <div class="metric-value bad">0.801</div>
                                             </div>
                                             <div class="metric">
                                                 <div class="metric-label">CTR</div>
                                                 <div class="metric-value">0.0042</div>
                                             </div>
                                         </div>
-                                    </article>
+                                    </div>
 
-                                    <!-- M0 (Overall Best) -->
-                                    <article
-                                        class="model-node best"
-                                        data-id="M0"
-                                        tabindex="0"
-                                        role="button"
-                                        aria-label="Model run M0: Overall best model, learning rate 0.030, NE 0.685 excellent, CTR 0.0039, created 6 hours ago"
-                                    >
-                                        <span class="best-badge">BEST</span>
+                                    <!-- M0 -->
+                                    <div class="model-node" data-id="M0">
                                         <div class="node-header">
                                             <span class="node-id">M0</span>
                                             <span class="node-timestamp">6h ago</span>
@@ -1018,33 +934,43 @@
                                         <div class="metrics">
                                             <div class="metric">
                                                 <div class="metric-label">NE</div>
-                                                <div class="metric-value good">
-                                                    0.685
-                                                    <span class="sr-only">(excellent)</span>
-                                                </div>
+                                                <div class="metric-value bad">0.788</div>
                                             </div>
                                             <div class="metric">
                                                 <div class="metric-label">CTR</div>
                                                 <div class="metric-value">0.0039</div>
                                             </div>
                                         </div>
-                                    </article>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </section>
+                    </div>
                 </div>
 
                 <!-- Comparison Panel -->
-                <aside class="comparison-panel" role="complementary" aria-label="Experiment flow summary">
+                <div class="comparison-panel">
                     <div class="comparison-title">🎯 Experiment Flow</div>
                     <div class="comparison-insight">
-                        <strong>Sweep 1:</strong> Tried 4 learning rates on D0 (deduped data). M2 (lr=0.005) achieved best NE (0.712).<br><br>
-                        <strong>Sweep 2:</strong> Fixed lr=0.005, moved to D1 (better feature coverage), swept sample_rate. M2.2 (sample_rate=0.6) achieved <strong>0.701 NE</strong> — a <strong>+1.3% improvement</strong> from combining optimal hyperparameters with better data quality.
+                        <strong>Sweep 1:</strong> Tried 4 learning rates on D0 (deduped data). M2 (lr=0.005) achieved best NE (0.856).<br><br>
+                        <strong>Sweep 2:</strong> Fixed lr=0.005, moved to D1 (better feature coverage), swept sample_rate. M2.2 (sample_rate=0.6) achieved <strong>0.867 NE</strong> — a <strong>+1.3% improvement</strong> from combining optimal hyperparameters with better data quality.
                     </div>
-                </aside>
+                </div>
+
+                <!-- Timeline -->
+                <div class="timeline">
+                    <div class="timeline-label">Timeline (Last 24h)</div>
+                    <div class="timeline-bar">
+                        <div class="timeline-marker" style="left: 20%;"></div>
+                        <div class="timeline-marker" style="left: 25%;"></div>
+                        <div class="timeline-marker" style="left: 30%;"></div>
+                        <div class="timeline-marker" style="left: 35%;"></div>
+                        <div class="timeline-marker" style="left: 75%;"></div>
+                        <div class="timeline-marker" style="left: 95%;"></div>
+                    </div>
+                </div>
             </div>
-        </main>
+        </div>
     </div>
 
     <script>
@@ -1068,18 +994,6 @@
             return {
                 x: rect.left - containerRect.left + rect.width / 2,
                 y: rect.top - containerRect.top + rect.height / 2
-            };
-        }
-
-        function debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
             };
         }
 
@@ -1116,18 +1030,13 @@
 
         // Initial draw
         setTimeout(drawConnections, 100);
-
-        // Debounced resize handler for performance
-        const debouncedRedraw = debounce(drawConnections, 150);
-        window.addEventListener('resize', debouncedRedraw);
+        window.addEventListener('resize', drawConnections);
 
         // Interactive highlights
         const dataNodes = document.querySelectorAll('.data-node');
         const modelNodes = document.querySelectorAll('.model-node');
 
-        // Add keyboard navigation to data nodes
         dataNodes.forEach(node => {
-            // Mouse events
             node.addEventListener('mouseenter', () => {
                 const nodeId = node.getAttribute('data-id');
                 node.classList.add('active');
@@ -1145,21 +1054,9 @@
             node.addEventListener('mouseleave', () => {
                 document.querySelectorAll('.active').forEach(el => el.classList.remove('active'));
             });
-
-            // Keyboard events
-            node.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    node.click();
-                    // Toggle focus state
-                    node.classList.toggle('active');
-                }
-            });
         });
 
-        // Add keyboard navigation to model nodes
         modelNodes.forEach(node => {
-            // Mouse events
             node.addEventListener('mouseenter', () => {
                 const modelId = node.getAttribute('data-id');
                 node.classList.add('active');
@@ -1178,16 +1075,6 @@
 
             node.addEventListener('mouseleave', () => {
                 document.querySelectorAll('.active').forEach(el => el.classList.remove('active'));
-            });
-
-            // Keyboard events
-            node.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    node.click();
-                    // Toggle focus state
-                    node.classList.toggle('active');
-                }
             });
         });
 
@@ -1220,7 +1107,7 @@
             const userMsg = document.createElement('div');
             userMsg.className = 'message user';
             userMsg.innerHTML = `
-                <div class="message-bubble">${escapeHtml(text)}</div>
+                <div class="message-bubble">${text}</div>
                 <div class="message-timestamp">Just now</div>
             `;
             chatMessages.appendChild(userMsg);
@@ -1247,26 +1134,11 @@
             }, 800);
         }
 
-        // XSS protection helper
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        // Suggested query clicks - keyboard accessible
+        // Suggested query clicks
         document.querySelectorAll('.suggested-chip').forEach(chip => {
             chip.addEventListener('click', () => {
                 chatInput.value = chip.textContent;
                 chatInput.focus();
-            });
-
-            chip.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    chatInput.value = chip.textContent;
-                    chatInput.focus();
-                }
             });
         });
     </script>

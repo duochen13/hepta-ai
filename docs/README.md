@@ -1,4 +1,4 @@
-# DataVint Landing Page
+# NanoML Landing Page
 
 This directory contains the **public-facing landing page** for https://www.datavint.io/
 
